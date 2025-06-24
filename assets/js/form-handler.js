@@ -282,6 +282,10 @@ class FormHandler {
     }
 
     trackConversion() {
+        if (window.analytics && window.analytics.trackFormCompletion) {
+            window.analytics.trackFormCompletion();
+        }
+        
         if (window.analytics && window.analytics.track) {
             window.analytics.track('Job Application Submitted', {
                 source: 'landing_page',

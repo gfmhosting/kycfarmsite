@@ -23,7 +23,12 @@ class Analytics {
         });
 
         if (typeof fbq !== 'undefined') {
-            fbq('track', 'PageView');
+            fbq('track', 'ViewContent', {
+                content_name: 'remote-customer-service-jobs',
+                content_category: 'job-application',
+                value: 15.00,
+                currency: 'USD'
+            });
         }
 
         if (typeof gtag !== 'undefined') {
@@ -71,9 +76,14 @@ class Analytics {
                 timestamp: new Date().toISOString()
             });
 
-            if (buttonText.toLowerCase().includes('apply')) {
+            if (buttonText.toLowerCase().includes('apply') || buttonText.toLowerCase().includes('qualify') || buttonText.toLowerCase().includes('start')) {
                 if (typeof fbq !== 'undefined') {
-                    fbq('track', 'InitiateCheckout');
+                    fbq('track', 'InitiateCheckout', {
+                        content_name: 'job-application-start',
+                        content_category: 'customer-service',
+                        value: 15.00,
+                        currency: 'USD'
+                    });
                 }
                 
                 if (typeof gtag !== 'undefined') {
@@ -113,8 +123,12 @@ class Analytics {
         });
 
         if (typeof fbq !== 'undefined') {
-            fbq('track', 'CompleteRegistration');
-            fbq('track', 'Lead');
+            fbq('track', 'Lead', {
+                content_name: 'customer-service-application',
+                content_category: 'job-application',
+                value: 50.00,
+                currency: 'USD'
+            });
         }
 
         if (typeof gtag !== 'undefined') {

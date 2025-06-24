@@ -204,45 +204,206 @@ class ApplicationWizard {
         if (stepNumber === 3) {
             const selectedSlot = document.getElementById('selectedSlot');
             if (!selectedSlot || !selectedSlot.value) {
-                alert('Please select an interview time slot before continuing.');
+                this.showValidationMessage('Please select an interview time slot to continue.');
                 return false;
             }
             return true;
+        }
+        
+        // Special validation for Step 4 (file uploads and video)
+        if (stepNumber === 4) {
+            let isValid = true;
+            
+            const idFrontFile = document.getElementById('idFront');
+            if (!idFrontFile?.files?.[0]) {
+                this.showFieldError(idFrontFile, 'Please upload a clear photo of your government ID');
+                isValid = false;
+            }
+            
+            if (!this.recordedBlob) {
+                const videoError = document.getElementById('cameraError');
+                if (videoError) {
+                    videoError.style.display = 'block';
+                    videoError.innerHTML = '<p style="color: #ef4444;">📹 Please record your 5-second verification video</p>';
+                }
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                this.showValidationMessage('Please complete all verification requirements before submitting.');
+            }
+            
+            return isValid;
         }
         
         const inputs = step.querySelectorAll('input[required], select[required]');
         console.log('Found required inputs:', inputs.length);
         
         let isValid = true;
+        const errors = [];
+        
         inputs.forEach(input => {
-            let valid;
+            this.clearFieldError(input);
+            input.style.borderColor = '#e2e8f0';
             
-            if (input.type === 'checkbox') {
-                valid = input.checked;
-            } else if (input.type === 'file') {
-                valid = input.files && input.files.length > 0;
-            } else {
-                valid = input.value.trim() !== '';
-            }
-            
-            console.log('Input', input.name || input.id, 'valid:', valid, 'value:', input.type === 'file' ? (input.files ? input.files.length + ' files' : 'no files') : input.value);
-            
-            if (!valid) {
+            // Check if field is empty
+            if (!this.hasValue(input)) {
                 isValid = false;
                 input.style.borderColor = '#ef4444';
-                this.showFieldError(input, 'This field is required');
-            } else {
-                input.style.borderColor = '#e2e8f0';
-                this.clearFieldError(input);
+                this.showFieldError(input, this.getRequiredFieldMessage(input));
+                errors.push(this.getRequiredFieldMessage(input));
+                return;
+            }
+            
+            // Validate field format
+            const validationResult = this.validateFieldFormat(input);
+            if (!validationResult.isValid) {
+                isValid = false;
+                input.style.borderColor = '#ef4444';
+                this.showFieldError(input, validationResult.message);
+                errors.push(validationResult.message);
             }
         });
         
         if (!isValid && stepNumber === this.currentStep) {
-            alert('Please fill in all required fields before continuing.');
+            this.showValidationMessage('Please fix the errors above to continue.');
         }
         
         console.log('Step validation result:', isValid);
         return isValid;
+    }
+
+    hasValue(input) {
+        if (input.type === 'checkbox') {
+            return input.checked;
+        } else if (input.type === 'file') {
+            return input.files && input.files.length > 0;
+        } else {
+            return input.value.trim() !== '';
+        }
+    }
+
+    validateFieldFormat(input) {
+        const value = input.value.trim();
+        
+        switch (input.type) {
+            case 'email':
+                return this.validateEmail(value);
+            case 'tel':
+                return this.validatePhone(value);
+            default:
+                switch (input.name) {
+                    case 'firstName':
+                    case 'lastName':
+                        return this.validateName(value);
+                    case 'location':
+                        return this.validateLocation(value);
+                    default:
+                        return { isValid: true };
+                }
+        }
+    }
+
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return { isValid: false, message: 'Please enter a valid email (e.g., john@example.com)' };
+        }
+        return { isValid: true };
+    }
+
+    validatePhone(phone) {
+        const digitsOnly = phone.replace(/\D/g, '');
+        
+        if (digitsOnly.length < 10) {
+            return { isValid: false, message: 'Phone number must be at least 10 digits' };
+        }
+        
+        if (digitsOnly.length > 11) {
+            return { isValid: false, message: 'Phone number is too long (max 11 digits)' };
+        }
+        
+        if (digitsOnly.length === 11 && !digitsOnly.startsWith('1')) {
+            return { isValid: false, message: 'For 11-digit numbers, start with 1' };
+        }
+        
+        return { isValid: true };
+    }
+
+    validateName(name) {
+        if (name.length < 2) {
+            return { isValid: false, message: 'Name must be at least 2 characters' };
+        }
+        
+        if (name.length > 50) {
+            return { isValid: false, message: 'Name is too long (max 50 characters)' };
+        }
+        
+        if (!/^[a-zA-Z\s'-]+$/.test(name)) {
+            return { isValid: false, message: 'Name can only contain letters, spaces, hyphens, and apostrophes' };
+        }
+        
+        return { isValid: true };
+    }
+
+    validateLocation(location) {
+        if (location.length < 3) {
+            return { isValid: false, message: 'Please enter city and state (e.g., Miami, FL)' };
+        }
+        
+        if (!location.includes(',')) {
+            return { isValid: false, message: 'Please include city and state (e.g., Los Angeles, CA)' };
+        }
+        
+        return { isValid: true };
+    }
+
+    getRequiredFieldMessage(input) {
+        const messages = {
+            email: 'Email address is required',
+            firstName: 'First name is required',
+            lastName: 'Last name is required',
+            phone: 'Phone number is required',
+            location: 'City and state are required',
+            experience: 'Please select your experience level',
+            schedule: 'Please select your preferred schedule'
+        };
+        
+        return messages[input.name] || 'This field is required';
+    }
+
+    showValidationMessage(message) {
+        // Create or update validation message
+        let messageEl = document.getElementById('validation-message');
+        if (!messageEl) {
+            messageEl = document.createElement('div');
+            messageEl.id = 'validation-message';
+            messageEl.style.cssText = `
+                background: #fee2e2;
+                border: 1px solid #fecaca;
+                color: #dc2626;
+                padding: 12px 16px;
+                border-radius: 8px;
+                margin: 16px 0;
+                font-size: 14px;
+                font-weight: 500;
+            `;
+            
+            const currentStep = document.querySelector(`[data-step="${this.currentStep}"]`);
+            if (currentStep) {
+                currentStep.insertBefore(messageEl, currentStep.firstChild);
+            }
+        }
+        
+        messageEl.textContent = message;
+        messageEl.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (messageEl) {
+                messageEl.style.display = 'none';
+            }
+        }, 5000);
     }
 
     showFieldError(field, message) {
@@ -545,9 +706,15 @@ class ApplicationWizard {
             console.log('Submission response:', result);
 
             if (response.ok && result.success) {
-                localStorage.removeItem('wizardData');
-                this.hideLoadingOverlay();
-                this.showSuccessMessage(result);
+                            localStorage.removeItem('wizardData');
+            this.hideLoadingOverlay();
+            
+            // Track successful form completion
+            if (window.analytics && window.analytics.trackFormCompletion) {
+                window.analytics.trackFormCompletion();
+            }
+            
+            this.showSuccessMessage(result);
             } else {
                 throw new Error(result.message || 'Submission failed');
             }

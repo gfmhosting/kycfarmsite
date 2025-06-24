@@ -222,34 +222,7 @@
     color: #92400e;
 }
 
-.cta-sidebar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 32px;
-    border-radius: 12px;
-    text-align: center;
-    color: white;
-}
 
-.cta-sidebar .btn {
-    background: white;
-    color: #667eea;
-    font-weight: 600;
-    margin-bottom: 16px;
-    width: 100%;
-}
-
-.cta-sidebar .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.cta-note {
-    font-size: 14px;
-    color: #ffffff;
-    margin: 0;
-    font-weight: 500;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
 
 @media (max-width: 968px) {
     .job-overview {
@@ -279,9 +252,7 @@
     .requirement-category,
     .job-quick-facts,
     .schedule-options,
-    .cta-sidebar {
-        padding: 24px;
-    }
+
     
     .shift-option {
         flex-direction: column;
