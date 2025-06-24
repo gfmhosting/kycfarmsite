@@ -347,14 +347,6 @@ class ApplicationWizard {
     }
 
     validateLocation(location) {
-        if (location.length < 3) {
-            return { isValid: false, message: 'Please enter city and state (e.g., Miami, FL)' };
-        }
-        
-        if (!location.includes(',')) {
-            return { isValid: false, message: 'Please include city and state (e.g., Los Angeles, CA)' };
-        }
-        
         return { isValid: true };
     }
 
@@ -364,7 +356,7 @@ class ApplicationWizard {
             firstName: 'First name is required',
             lastName: 'Last name is required',
             phone: 'Phone number is required',
-            location: 'City and state are required',
+            location: 'Location is required',
             experience: 'Please select your experience level',
             schedule: 'Please select your preferred schedule'
         };
