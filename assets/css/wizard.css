@@ -434,38 +434,42 @@
 }
 
 .notice-box {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border: 1px solid #0ea5e9;
+    background: white;
+    border: 2px solid #3b82f6;
     border-radius: 16px;
     padding: 25px;
     text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .notice-box h4 {
-    color: #0c4a6e;
-    margin-bottom: 10px;
-    font-size: 18px;
+    color: #1e40af;
+    margin-bottom: 15px;
+    font-size: 20px;
+    font-weight: 600;
 }
 
 .notice-box p {
-    color: #0369a1;
-    margin: 0;
+    color: #374151;
+    margin: 10px 0;
+    font-weight: 500;
 }
 
 /* Security notice for video section */
 .security-notice-small {
-    background: #f0f9ff;
-    border: 1px solid #0ea5e9;
-    border-radius: 8px;
-    padding: 15px;
+    background: #fef3c7;
+    border: 2px solid #f59e0b;
+    border-radius: 12px;
+    padding: 18px;
     margin-top: 20px;
 }
 
 .security-notice-small p {
-    color: #0c4a6e;
+    color: #92400e;
     margin: 0;
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.6;
+    font-weight: 500;
 }
 
 /* New step styling */
@@ -823,24 +827,36 @@
 
 /* Step 4 styling */
 .interview-confirmation {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border: 2px solid #0ea5e9;
+    background: #ecfdf5;
+    border: 2px solid #10b981;
     border-radius: 16px;
     padding: 25px;
     margin-bottom: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .confirmation-box h3 {
-    color: #0c4a6e;
+    color: #047857;
     margin-bottom: 15px;
+    font-weight: 600;
 }
 
 .confirmation-box p {
-    color: #0369a1;
+    color: #374151;
     margin-bottom: 8px;
+    font-weight: 500;
 }
 
 .employment-verification .verification-section {
+    margin-bottom: 30px;
+}
+
+.employment-verification {
+    margin-bottom: 30px;
+}
+
+.pre-interview-notice {
+    margin-top: 40px;
     margin-bottom: 30px;
 }
 
@@ -848,11 +864,13 @@
     text-align: left;
     margin: 15px 0;
     padding-left: 20px;
+    list-style: none;
 }
 
 .pre-interview-notice .notice-box li {
-    color: #0369a1;
-    margin-bottom: 8px;
+    color: #374151;
+    margin-bottom: 10px;
+    font-weight: 500;
 }
 
 .btn-next,
