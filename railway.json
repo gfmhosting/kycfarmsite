@@ -10,18 +10,14 @@
     "healthcheckTimeout": 30000,
     "healthcheckInterval": 10000,
     "restartPolicyType": "always",
-    "replicas": 1,
-    "volumes": [
-      {
-        "mountPath": "/app/backend/uploads",
-        "name": "uploads-storage"
-      }
-    ]
+    "replicas": 1
   },
   "environments": {
     "production": {
       "variables": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_ANON_KEY": "your-anon-key-here"
       }
     }
   }
