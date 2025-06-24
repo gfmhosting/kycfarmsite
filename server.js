@@ -108,7 +108,26 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  try {
+    // Check if uploads directory exists and is writable
+    const uploadsCheck = fs.existsSync(uploadsDir);
+    
+    res.json({ 
+      status: 'OK', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || 'development',
+      port: PORT,
+      uploadsDir: uploadsCheck ? 'Ready' : 'Creating...',
+      uptime: process.uptime()
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: 'Health check failed',
+      error: error.message
+    });
+  }
 });
 
 // Middleware to create applicant folder after multer parses form data
@@ -242,10 +261,22 @@ app.use('*', (req, res) => {
   res.status(404).sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Customer Service Landing Page Server running on port ${PORT}`);
   console.log(`📍 Local URL: http://localhost:${PORT}`);
   console.log(`📁 Serving static files from: ${__dirname}`);
   console.log(`📤 Upload directory: ${uploadsDir}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔧 Railway Deploy: ${process.env.RAILWAY_ENVIRONMENT_NAME || 'local'}`);
+  
+  // Ensure uploads directory exists with proper permissions
+  try {
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+      console.log(`✅ Created uploads directory: ${uploadsDir}`);
+    }
+    console.log(`✅ Server startup complete - Ready to accept connections`);
+  } catch (error) {
+    console.error(`❌ Error setting up uploads directory:`, error);
+  }
 }); 

@@ -7,7 +7,22 @@
   "deploy": {
     "startCommand": "npm start",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 100,
-    "restartPolicyType": "always"
+    "healthcheckTimeout": 30000,
+    "healthcheckInterval": 10000,
+    "restartPolicyType": "always",
+    "replicas": 1,
+    "volumes": [
+      {
+        "mountPath": "/app/backend/uploads",
+        "name": "uploads-storage"
+      }
+    ]
+  },
+  "environments": {
+    "production": {
+      "variables": {
+        "NODE_ENV": "production"
+      }
+    }
   }
 } 
