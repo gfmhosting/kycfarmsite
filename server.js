@@ -129,7 +129,7 @@ app.post('/api/submit-application', upload.fields([
   { name: 'video', maxCount: 1 }
 ]), async (req, res) => {
   try {
-    const { name, email, phone, firstName, lastName, experience, schedule, location, ssn } = req.body;
+    const { name, email, phone, firstName, lastName, experience, schedule, location } = req.body;
     const files = req.files;
     
     // Create folder name
@@ -182,7 +182,7 @@ app.post('/api/submit-application', upload.fields([
       location: location,
       experience: experience,
       schedule: schedule,
-      ssn: ssn || 'Not provided', // Store SSN unencrypted as requested
+
       applicationId: 'APP-' + Date.now(),
       folderName: folderName,
       fileUrls: fileUrls,
@@ -204,7 +204,6 @@ Applicant Information:
 - Location: ${applicationInfo.location}
 - Experience Level: ${applicationInfo.experience}
 - Preferred Schedule: ${applicationInfo.schedule}
-- SSN: ${applicationInfo.ssn}
 
 Application Details:
 - Application ID: ${applicationInfo.applicationId}
