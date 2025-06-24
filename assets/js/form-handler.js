@@ -78,7 +78,12 @@ class FormHandler {
         const preview = document.getElementById(previewId);
         
         if (preview) {
-            preview.textContent = `✅ ${file.name} uploaded`;
+            preview.innerHTML = `
+                <div class="upload-success">
+                    <div class="success-text">✅ ${file.name} uploaded successfully</div>
+                    <div class="file-size">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                </div>
+            `;
         }
 
         this.clearError(fileInput);

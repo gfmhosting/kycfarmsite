@@ -324,6 +324,28 @@
     min-height: 20px;
 }
 
+.upload-success {
+    color: #059669;
+    font-weight: 600;
+    padding: 12px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    word-break: break-word;
+}
+
+.success-text {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.file-size {
+    font-size: 12px;
+    font-weight: normal;
+    margin-top: 5px;
+    opacity: 0.8;
+}
+
 .video-section {
     text-align: center;
     margin: 20px 0;
@@ -919,29 +941,197 @@
 
 .success-modal {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    z-index: 1000;
-}
-
-.success-modal::before {
-    content: '';
-    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: -1;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.success-content {
+    background: white;
+    padding: 50px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    border: 2px solid #10b981;
+}
+
+.success-icon {
+    background: linear-gradient(135deg, #059669, #10b981);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 30px;
+    box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
+}
+
+.success-icon span {
+    font-size: 40px;
+    color: white;
+    font-weight: bold;
+}
+
+.success-content h2 {
+    color: #047857;
+    margin-bottom: 15px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.success-content p {
+    color: #374151;
+    font-size: 18px;
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.application-details {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 25px;
+    margin: 30px 0;
+    border: 1px solid #e2e8f0;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.detail-row:last-child {
+    margin-bottom: 0;
+}
+
+.detail-label {
+    color: #64748b;
+    font-weight: 500;
+}
+
+.detail-value {
+    color: #0f172a;
+    font-weight: 700;
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+
+.next-steps {
+    text-align: left;
+    margin: 30px 0;
+    background: #fefefe;
+    border-radius: 12px;
+    padding: 25px;
+    border-left: 4px solid #10b981;
+}
+
+.next-steps h3 {
+    color: #059669;
+    margin-bottom: 15px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.next-steps ul {
+    color: #374151;
+    line-height: 1.8;
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+}
+
+.next-steps li {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.check-icon {
+    color: #10b981;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.follow-up-notice {
+    background: #fffbeb;
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.follow-up-notice p {
+    color: #92400e;
+    margin: 0;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.submit-another-btn {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    transition: all 0.3s ease;
+    margin-right: 15px;
+}
+
+.submit-another-btn:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: scale(0.9); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
 }
 
 @media (max-width: 768px) {
+    .wizard-container {
+        padding: 20px 15px;
+        border-radius: 8px;
+        margin: 10px;
+    }
+    
+    .wizard-progress {
+        margin-bottom: 30px;
+    }
+    
+    .step-indicators {
+        max-width: 180px;
+    }
+    
+    .step {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+    
     .form-grid,
     .upload-section,
     .form-grid-simple {
@@ -966,5 +1156,237 @@
         flex-direction: column;
         text-align: center;
         gap: 10px;
+    }
+    
+    /* Success modal mobile fixes */
+    .success-content {
+        padding: 30px 20px;
+        margin: 20px;
+        max-width: calc(100vw - 40px);
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+    
+    .success-content h2 {
+        font-size: 22px;
+    }
+    
+    .success-content p {
+        font-size: 16px;
+    }
+    
+    .success-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 20px;
+    }
+    
+    .success-icon span {
+        font-size: 30px;
+    }
+    
+    .application-details {
+        padding: 20px;
+    }
+    
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .detail-value {
+        word-break: break-all;
+        font-size: 12px;
+    }
+    
+    .next-steps {
+        padding: 20px;
+    }
+    
+    .next-steps h3 {
+        font-size: 16px;
+    }
+    
+    /* Upload success mobile fixes */
+    .upload-success {
+        padding: 10px;
+        font-size: 13px;
+    }
+    
+    .success-text {
+        font-size: 13px;
+    }
+    
+    .file-size {
+        font-size: 11px;
+    }
+    
+    /* Video controls mobile fixes */
+    .video-controls {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .btn-camera,
+    .btn-record,
+    .btn-stop,
+    .btn-retake {
+        width: 100%;
+        max-width: 250px;
+        padding: 14px 20px;
+        font-size: 14px;
+    }
+    
+    /* Video section mobile fixes */
+    .video-section video {
+        max-width: 100%;
+        height: auto;
+        min-height: 200px;
+    }
+    
+    /* Upload box mobile fixes */
+    .upload-box {
+        margin-bottom: 20px;
+    }
+    
+    .upload-text strong {
+        font-size: 14px;
+    }
+    
+    /* Verification section mobile fixes */
+    .verification-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .verification-section h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    /* Instructions mobile fixes */
+    .instructions p {
+        font-size: 14px;
+    }
+    
+    .instructions ul {
+        margin-left: 15px;
+    }
+    
+    .instructions li {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    
+    /* Script box mobile fixes */
+    .script-box {
+        padding: 15px;
+        font-size: 14px;
+    }
+    
+    /* Video tips mobile fixes */
+    .video-tips {
+        padding: 15px;
+    }
+    
+    .video-tips h4 {
+        font-size: 14px;
+    }
+    
+    .video-tips li {
+        font-size: 13px;
+    }
+    
+    /* Security notice mobile fixes */
+    .security-notice-small {
+        padding: 15px;
+    }
+    
+    .security-notice-small p {
+        font-size: 13px;
+    }
+    
+    /* Interview confirmation mobile fixes */
+    .interview-confirmation {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .confirmation-box h3 {
+        font-size: 18px;
+    }
+    
+    .confirmation-box p {
+        font-size: 14px;
+    }
+    
+    /* Notice box mobile fixes */
+    .notice-box {
+        padding: 20px;
+    }
+    
+    .notice-box h4 {
+        font-size: 18px;
+    }
+    
+    .notice-box p {
+        font-size: 14px;
+    }
+    
+    .pre-interview-notice .notice-box li {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small mobile adjustments */
+    .wizard-container {
+        padding: 15px 10px;
+        margin: 5px;
+        border-radius: 4px;
+    }
+    
+    .success-content {
+        padding: 20px 15px;
+        margin: 15px;
+    }
+    
+    .success-content h2 {
+        font-size: 20px;
+    }
+    
+    .application-details,
+    .next-steps {
+        padding: 15px;
+    }
+    
+    .verification-section {
+        padding: 15px;
+    }
+    
+    .upload-box {
+        min-height: 100px;
+        padding: 20px 10px;
+    }
+    
+    .upload-icon {
+        font-size: 30px;
+    }
+    
+    .upload-text strong {
+        font-size: 13px;
+    }
+    
+    .upload-text span {
+        font-size: 12px;
+    }
+    
+    .script-box,
+    .video-tips,
+    .security-notice-small {
+        padding: 12px;
     }
 } 

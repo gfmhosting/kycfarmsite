@@ -444,11 +444,9 @@ class ApplicationWizard {
             
             if (preview) {
                 preview.innerHTML = `
-                    <div style="color: #059669; font-weight: 600; padding: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;">
-                        ✅ ${file.name} uploaded successfully
-                        <div style="font-size: 12px; font-weight: normal; margin-top: 5px;">
-                            Size: ${(file.size / 1024 / 1024).toFixed(2)} MB
-                        </div>
+                    <div class="upload-success">
+                        <div class="success-text">✅ ${file.name} uploaded successfully</div>
+                        <div class="file-size">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</div>
                     </div>
                 `;
             }
@@ -570,85 +568,65 @@ class ApplicationWizard {
         const successModal = document.getElementById('successModal');
         if (successModal) {
             successModal.innerHTML = `
-                <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 50px; border-radius: 20px; text-align: center; max-width: 600px; margin: 0 auto; box-shadow: 0 25px 50px rgba(0,0,0,0.25); border: 1px solid #0ea5e9;">
-                    <div style="background: linear-gradient(135deg, #059669, #10b981); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 30px; box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);">
-                        <span style="font-size: 40px; color: white;">✓</span>
+                <div class="success-content">
+                    <div class="success-icon">
+                        <span>✓</span>
                     </div>
-                    <h2 style="color: #0c4a6e; margin-bottom: 15px; font-size: 28px; font-weight: 700;">Application Submitted Successfully!</h2>
-                    <p style="color: #0369a1; font-size: 18px; margin-bottom: 30px; font-weight: 500;">Your application has been received and is being processed.</p>
+                    <h2>Application Submitted Successfully!</h2>
+                    <p>Your application has been received and is being processed.</p>
                     
-                    <div style="background: white; border-radius: 12px; padding: 25px; margin: 30px 0; border: 1px solid #bae6fd;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <span style="color: #64748b; font-weight: 500;">Application ID:</span>
-                            <span style="color: #0f172a; font-weight: 700; font-family: monospace; background: #f1f5f9; padding: 5px 10px; border-radius: 6px;">${result.applicationId}</span>
+                    <div class="application-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Application ID:</span>
+                            <span class="detail-value">${result.applicationId}</span>
                         </div>
                         ${result.applicantFolder ? `
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #64748b; font-weight: 500;">Reference:</span>
-                            <span style="color: #0f172a; font-weight: 600;">${result.applicantFolder}</span>
+                        <div class="detail-row">
+                            <span class="detail-label">Reference:</span>
+                            <span class="detail-value">${result.applicantFolder}</span>
                         </div>
                         ` : ''}
                     </div>
                     
-                    <div style="text-align: left; margin: 30px 0; background: #fefefe; border-radius: 12px; padding: 25px; border-left: 4px solid #10b981;">
-                        <h4 style="color: #059669; margin-bottom: 15px; font-size: 18px; display: flex; align-items: center;">
-                            <span style="margin-right: 10px;">📋</span> What Happens Next:
-                        </h4>
-                        <ul style="color: #374151; line-height: 1.8; padding-left: 0; list-style: none;">
+                    <div class="next-steps">
+                        <h3>📋 What Happens Next:</h3>
+                        <ul>
                             ${result.nextSteps ? result.nextSteps.map(step => `
-                                <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; margin-right: 10px; font-weight: bold;">✓</span>
+                                <li>
+                                    <span class="check-icon">✓</span>
                                     ${step}
                                 </li>
                             `).join('') : `
-                                <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; margin-right: 10px; font-weight: bold;">✓</span>
+                                <li>
+                                    <span class="check-icon">✓</span>
                                     Check your email for confirmation within 15 minutes
                                 </li>
-                                <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; margin-right: 10px; font-weight: bold;">✓</span>
+                                <li>
+                                    <span class="check-icon">✓</span>
                                     Prepare for a brief phone screening call
                                 </li>
-                                <li style="margin-bottom: 8px; display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; margin-right: 10px; font-weight: bold;">✓</span>
+                                <li>
+                                    <span class="check-icon">✓</span>
                                     Background check will begin processing
                                 </li>
-                                <li style="display: flex; align-items: flex-start;">
-                                    <span style="color: #10b981; margin-right: 10px; font-weight: bold;">✓</span>
+                                <li>
+                                    <span class="check-icon">✓</span>
                                     Interview scheduling confirmation coming soon
                                 </li>
                             `}
                         </ul>
                     </div>
                     
-                    <div style="margin-top: 40px;">
-                        <button onclick="location.reload()" style="background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3); transition: all 0.3s ease; margin-right: 15px;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                            Submit Another Application
-                        </button>
-                        <button onclick="window.close()" style="background: transparent; color: #64748b; border: 2px solid #e2e8f0; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#94a3b8'; this.style.color='#475569'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#64748b'">
-                            Close Window
-                        </button>
+                    <div class="follow-up-notice">
+                        <p>💼 <strong>Most applicants hear back within 24 hours.</strong> Keep an eye on your email and phone!</p>
                     </div>
                     
-                    <p style="color: #94a3b8; font-size: 14px; margin-top: 30px; font-style: italic;">
-                        Save this confirmation for your records. You can also screenshot this page.
-                    </p>
+                    <button onclick="location.reload()" class="submit-another-btn">
+                        Submit Another Application
+                    </button>
                 </div>
             `;
-            successModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.85);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 100000;
-                backdrop-filter: blur(5px);
-                animation: fadeIn 0.3s ease-out;
-            `;
+            successModal.style.display = 'flex';
             
             // Add fade-in animation
             if (!document.getElementById('modal-animations')) {

@@ -9,8 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Supabase configuration
-const supabaseUrl = process.env.SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'your-anon-key';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://xduxzptxhvvlmiwxqhxz.supabase.co';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkdXh6cHR4aHZ2bG1pd3hxaHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NzM1MDQsImV4cCI6MjA2NjM0OTUwNH0.nEPp5-ke8-aCNJPuCcSI8S319s7_QZxKgEPb2jkHt20';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Ensure local uploads directory exists for temporary files
