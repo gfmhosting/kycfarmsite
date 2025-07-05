@@ -10,7 +10,6 @@
                 <div class="step active">1</div>
                 <div class="step">2</div>
                 <div class="step">3</div>
-                <div class="step">4</div>
             </div>
         </div>
         
@@ -86,9 +85,46 @@
                             <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required>
                         </div>
                         <div class="form-field">
-                            <label for="location">City, State</label>
-                            <input type="text" id="location" name="location" placeholder="Your City, ST" required>
+                            <label for="whatsapp">WhatsApp Number</label>
+                            <input type="tel" id="whatsapp" name="whatsapp" placeholder="(555) 123-4567" required>
+                            <small style="color: #6b7280;">All future communication will be via WhatsApp</small>
                         </div>
+                    </div>
+                    
+                    <div class="address-section">
+                        <h3 style="margin: 30px 0 20px 0; color: #1f2937;">📍 Address Information</h3>
+
+                        
+                        <div class="form-grid-simple">
+                            <div class="form-field" style="grid-column: 1 / -1;">
+                                <label for="street">Street Address</label>
+                                <input type="text" id="street" name="street" placeholder="123 Main Street" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="city">City</label>
+                                <input type="text" id="city" name="city" placeholder="Your City" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="state">State</label>
+                                <input type="text" id="state" name="state" placeholder="ST" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="zipCode">ZIP Code</label>
+                                <input type="text" id="zipCode" name="zipCode" placeholder="12345" required>
+                            </div>
+                            <div class="form-field">
+                                <label for="country">Country</label>
+                                <input type="text" id="country" name="country" value="United States" required>
+                            </div>
+                        </div>
+                        
+
+                    </div>
+                    
+                    <div class="whatsapp-notice" style="background: #f0f9ff; border: 2px solid #0ea5e9; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                        <h4 style="color: #0c4a6e; margin-bottom: 15px;">📱 WhatsApp Communication Notice</h4>
+                        <p style="color: #0369a1; margin-bottom: 10px;"><strong>All future communication will be conducted via WhatsApp.</strong></p>
+                        <p style="color: #0369a1; margin: 0;">Please ensure you have WhatsApp installed and can receive messages at the number provided above.</p>
                     </div>
                 </div>
                 
@@ -103,208 +139,102 @@
                 </div>
             </div>
             
-            <!-- Step 3: Interview Scheduling -->
+            <!-- Step 3: Review Information & Next Steps -->
             <div class="wizard-step" data-step="3">
-                <h2>📅 Schedule Your Interview</h2>
-                <p class="step-intro">Book a quick 15-minute call with Sarah, our hiring manager. She'll discuss your role details and can make you a conditional offer on the spot!</p>
+                <h2>📋 Review Your Information</h2>
+                <p class="step-intro">Please review your information below and confirm submission. Make sure all details are accurate.</p>
                 
-                <div class="hiring-manager-intro">
-                    <div class="manager-profile">
-                        <div class="manager-photo">👩‍💼</div>
-                        <div class="manager-details">
-                            <h3>Meet Sarah Johnson</h3>
-                            <p><strong>Remote Hiring Manager</strong></p>
-                            <p>5+ years hiring for customer service roles</p>
-                            <div class="manager-stats">
-                                <span>✅ 200+ people hired</span>
-                                <span>⚡ 15-min interviews</span>
-                                <span>🎯 85% offer rate</span>
+                <div class="review-section">
+                    <div class="review-card">
+                        <h3>👤 Personal Information</h3>
+                        <div class="review-grid">
+                            <div class="review-item">
+                                <span class="review-label">Name:</span>
+                                <span class="review-value" id="reviewName">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Email:</span>
+                                <span class="review-value" id="reviewEmail">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Phone:</span>
+                                <span class="review-value" id="reviewPhone">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">WhatsApp:</span>
+                                <span class="review-value" id="reviewWhatsapp">-</span>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="interview-details">
-                    <h3>📋 What to Expect:</h3>
-                    <ul>
-                        <li>🎯 <strong>15 minutes</strong> - Quick and efficient</li>
-                        <li>💼 <strong>Role details</strong> - Specific duties and schedule</li>
-                        <li>💰 <strong>Compensation</strong> - Your exact pay rate</li>
-                        <li>📅 <strong>Start date</strong> - When you can begin</li>
-                        <li>✅ <strong>Conditional offer</strong> - Get hired on the call!</li>
-                    </ul>
-                </div>
-                
-                <div class="scheduling-widget">
-                    <h3>🗓️ Pick Your Interview Time</h3>
-                    <div class="calendar-placeholder">
-                        <div class="available-slots">
-                            <h4>Available Today:</h4>
-                            <div class="time-slots">
-                                <button type="button" class="time-slot">10:00 AM</button>
-                                <button type="button" class="time-slot">2:00 PM</button>
-                                <button type="button" class="time-slot">4:30 PM</button>
-                            </div>
-                            <h4>Available Tomorrow:</h4>
-                            <div class="time-slots">
-                                <button type="button" class="time-slot">9:00 AM</button>
-                                <button type="button" class="time-slot">11:30 AM</button>
-                                <button type="button" class="time-slot">3:00 PM</button>
-                            </div>
-                        </div>
-                        <input type="hidden" name="selectedSlot" id="selectedSlot">
-                    </div>
-                </div>
-                
-                <div class="interview-preparation">
-                    <h3>📱 Interview Requirements:</h3>
-                    <p>To make the most of your 15 minutes and get your conditional offer, we'll need to complete your employment paperwork before the call. This ensures Sarah can focus on your role details and compensation package.</p>
                     
-                    <div class="requirements-list">
-                        <div class="requirement-item">
-                            <span class="req-icon">✅</span>
-                            <span>Complete application (next step - 2 minutes)</span>
+                    <div class="review-card">
+                        <h3>📍 Address Information</h3>
+                        <div class="review-address" id="reviewAddress">-</div>
+                    </div>
+                    
+                    <div class="review-card">
+                        <h3>💼 Work Preferences</h3>
+                        <div class="review-grid">
+                            <div class="review-item">
+                                <span class="review-label">Experience:</span>
+                                <span class="review-value" id="reviewExperience">-</span>
+                            </div>
+                            <div class="review-item">
+                                <span class="review-label">Schedule:</span>
+                                <span class="review-value" id="reviewSchedule">-</span>
+                            </div>
                         </div>
-                        <div class="requirement-item">
-                            <span class="req-icon">📞</span>
-                            <span>Quiet space for the call</span>
+                    </div>
+                </div>
+                
+                <div class="next-steps-info">
+                    <h3>📞 What Happens Next</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon">📱</div>
+                            <div class="timeline-content">
+                                <h4>Within 48-72 Hours</h4>
+                                <p>A representative will contact you via <strong>WhatsApp</strong> for identity verification. Please keep an eye on your WhatsApp messages.</p>
+                            </div>
                         </div>
-                        <div class="requirement-item">
-                            <span class="req-icon">🆔</span>
-                            <span>Government ID ready for verification</span>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">🆔</div>
+                            <div class="timeline-content">
+                                <h4>Identity Verification Call</h4>
+                                <p>Quick 5-10 minute verification process via WhatsApp video call to confirm your identity and eligibility.</p>
+                            </div>
                         </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">💼</div>
+                            <div class="timeline-content">
+                                <h4>Interview Scheduling</h4>
+                                <p>After successful verification, we'll schedule a 15-20 minute call to discuss the role details and your background.</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-icon">🎉</div>
+                            <div class="timeline-content">
+                                <h4>Hiring & Onboarding</h4>
+                                <p>If all goes well, we'll begin the hiring and onboarding process to get you started!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="whatsapp-reminder">
+                    <div style="background: #dcfce7; border: 2px solid #22c55e; border-radius: 12px; padding: 20px; margin: 20px 0;">
+                        <h4 style="color: #15803d; margin-bottom: 15px;">📱 Important WhatsApp Reminder</h4>
+                        <p style="color: #166534; margin-bottom: 10px;"><strong>Our representative will contact you via WhatsApp within 48-72 hours.</strong></p>
+                        <p style="color: #166534; margin: 0;">Please ensure you can receive WhatsApp messages and be ready to respond when contacted.</p>
                     </div>
                 </div>
                 
                 <div class="step-buttons">
                     <button type="button" class="btn-prev">Previous</button>
-                    <button type="button" class="btn-next">Continue to Application</button>
+                    <button type="submit" class="btn-submit" id="finalSubmit">🚀 Submit Application</button>
                 </div>
             </div>
-            
-            <!-- Step 4: Final Application -->
-            <div class="wizard-step" data-step="4">
-                <h2>📋 Final Application - Interview Preparation</h2>
-                <p class="step-intro">Your interview with Sarah is confirmed! Complete this quick application so she can focus on your offer details during the call.</p>
-                
-                <div class="interview-confirmation">
-                    <div class="confirmation-box">
-                        <h3>✅ Interview Confirmed</h3>
-                        <p><strong>Date:</strong> <span id="selectedDate">Today at 2:00 PM</span></p>
-                        <p><strong>Duration:</strong> 15 minutes</p>
-                        <p><strong>Type:</strong> Phone/Video call</p>
-                        <p><strong>With:</strong> Sarah Johnson, Hiring Manager</p>
-                    </div>
-                </div>
-                
-                <div class="employment-verification">
-                    <!-- ID Upload Section -->
-                    <div class="verification-section">
-                        <h3>📄 Identity Verification</h3>
-                        <div class="instructions">
-                            <p><strong>Upload your government ID for verification during the interview:</strong></p>
-                            <ul>
-                                <li>✓ Driver's License, State ID, or Passport</li>
-                                <li>✓ Make sure all text is clearly readable</li>
-                                <li>✓ Avoid glare and shadows</li>
-                                <li>✓ Sarah will verify this during your call</li>
-                            </ul>
-                        </div>
-                        <div class="upload-section">
-                            <div class="upload-box">
-                                <input type="file" id="idFront" name="idFront" accept="image/*" capture="environment" required>
-                                <label for="idFront" class="upload-label">
-                                    <div class="upload-icon">📷</div>
-                                    <div class="upload-text">
-                                        <strong>Front of ID</strong>
-                                        <span>Tap to take photo or select from gallery</span>
-                                    </div>
-                                </label>
-                                <div class="file-preview" id="frontPreview"></div>
-                            </div>
-                            <div class="upload-box">
-                                <input type="file" id="idBack" name="idBack" accept="image/*" capture="environment">
-                                <label for="idBack" class="upload-label">
-                                    <div class="upload-icon">📷</div>
-                                    <div class="upload-text">
-                                        <strong>Back of ID (optional)</strong>
-                                        <span>Tap to take photo or select from gallery</span>
-                                    </div>
-                                </label>
-                                <div class="file-preview" id="backPreview"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Video Recording Section -->
-                    <div class="verification-section">
-                        <h3>🎥 Quick ID Verification</h3>
-                        <div class="instructions">
-                            <p><strong>Record a quick 5-second video to match your face to your ID:</strong></p>
-                            <div class="script-box">
-                                📋 <strong>Simple Process:</strong><br>
-                                1. Look directly at camera (2 seconds)<br>
-                                2. Turn head slightly left (1 second)<br>
-                                3. Turn head slightly right (1 second)<br>
-                                4. Look back at camera (1 second)<br><br>
-                                <strong>Silent video - no talking needed!</strong>
-                            </div>
-                            <div class="video-tips">
-                                <h4>📋 Quick Setup:</h4>
-                                <ul>
-                                    <li>🔆 <strong>Good lighting:</strong> Face a window or bright light</li>
-                                    <li>👤 <strong>Clear view:</strong> Remove glasses/hats temporarily</li>
-                                    <li>📱 <strong>Hold steady:</strong> Keep camera still</li>
-                                    <li>⚡ <strong>5 seconds total:</strong> Quick and easy!</li>
-                                </ul>
-                            </div>
-                            <div class="security-notice-small">
-                                <p><strong>🔒 Standard security:</strong> Same verification used by banks and government agencies. This prepares everything for your interview with Sarah!</p>
-                            </div>
-                        </div>
-                        
-                        <div class="video-section">
-                            <div class="video-container">
-                                <video id="preview" autoplay muted playsinline></video>
-                                <div id="cameraError" class="error-message" style="display:none">
-                                    <p>📹 Camera access needed for verification</p>
-                                    <small>Please allow camera access and try again</small>
-                                </div>
-                            </div>
-                            
-                            <div class="video-controls">
-                                <button type="button" id="startCamera" class="btn-camera">📹 Start Camera</button>
-                                <button type="button" id="recordBtn" class="btn-record" style="display:none">🔴 Start ID Verification</button>
-                                <button type="button" id="stopBtn" class="btn-stop" style="display:none">⏹️ Stop Recording</button>
-                                <button type="button" id="retakeBtn" class="btn-retake" style="display:none">↻ Retake Verification</button>
-                            </div>
-                            
-                            <div class="recording-status" id="recordingStatus"></div>
-                            
-                            <video id="recorded" controls style="display:none" playsinline></video>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="pre-interview-notice">
-                    <div class="notice-box">
-                        <h4>🎉 Ready for Your Interview!</h4>
-                        <p>Once submitted, you'll receive:</p>
-                        <ul>
-                            <li>📧 Interview confirmation email</li>
-                            <li>📞 Call-in details for your interview</li>
-                            <li>📋 Interview preparation guide</li>
-                            <li>⚡ Background check status (usually clears in 24-48 hours)</li>
-                        </ul>
-                        <p><strong>Sarah is excited to meet you and discuss your offer!</strong></p>
-                    </div>
-                </div>
-                
-                <div class="step-buttons">
-                    <button type="button" class="btn-prev">Previous</button>
-                    <button type="submit" class="btn-submit" id="finalSubmit">🚀 Complete Application & Confirm Interview</button>
-                </div>
-            </div>
         </form>
         
         <div class="success-modal" id="successModal" style="display:none">

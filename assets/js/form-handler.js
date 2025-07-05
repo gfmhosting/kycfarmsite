@@ -17,7 +17,6 @@ class FormHandler {
             
             if (this.form) {
                 this.attachEventListeners();
-                this.setupFileUpload();
                 console.log('FormHandler initialized successfully');
             } else {
                 // Try again after a short delay
@@ -38,67 +37,7 @@ class FormHandler {
         });
     }
 
-    setupFileUpload() {
-        const idFrontInput = document.getElementById('idFront');
-        const idBackInput = document.getElementById('idBack');
 
-        if (!idFrontInput && !idBackInput) return;
-
-        // Set up file upload handling for ID uploads
-        if (idFrontInput) {
-            idFrontInput.addEventListener('change', () => this.handleFileSelection(idFrontInput));
-        }
-        if (idBackInput) {
-            idBackInput.addEventListener('change', () => this.handleFileSelection(idBackInput));
-        }
-    }
-
-    handleFileSelection(fileInput) {
-        const file = fileInput.files[0];
-
-        if (!file) return;
-
-        if (file.size > 10 * 1024 * 1024) {
-            this.showError(fileInput.name, 'File size must be less than 10MB');
-            fileInput.value = '';
-            return;
-        }
-
-        const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-        
-        if (!allowedTypes.includes(fileExtension)) {
-            this.showError(fileInput.name, 'Please upload an image file (JPG, PNG, GIF, WebP)');
-            fileInput.value = '';
-            return;
-        }
-
-        // Show preview for ID uploads
-        const previewId = fileInput.id === 'idFront' ? 'frontPreview' : 'backPreview';
-        const preview = document.getElementById(previewId);
-        
-        if (preview) {
-            preview.innerHTML = `
-                <div class="upload-success">
-                    <div class="success-text">✅ ${file.name} uploaded successfully</div>
-                    <div class="file-size">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</div>
-                </div>
-            `;
-        }
-
-        this.clearError(fileInput);
-    }
-
-    removeFile(fileInput) {
-        fileInput.value = '';
-        
-        const previewId = fileInput.id === 'idFront' ? 'frontPreview' : 'backPreview';
-        const preview = document.getElementById(previewId);
-        
-        if (preview) {
-            preview.textContent = '';
-        }
-    }
 
     validateField(field) {
         const value = field.value.trim();
@@ -119,14 +58,22 @@ class FormHandler {
                 }
                 break;
             case 'phone':
+            case 'whatsapp':
                 if (value && !this.isValidPhone(value)) {
                     this.showError(fieldName, 'Please enter a valid phone number');
                     return false;
                 }
                 break;
-            case 'fullName':
+            case 'firstName':
+            case 'lastName':
                 if (value && value.length < 2) {
                     this.showError(fieldName, 'Name must be at least 2 characters');
+                    return false;
+                }
+                break;
+            case 'zipCode':
+                if (value && !this.isValidZipCode(value)) {
+                    this.showError(fieldName, 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)');
                     return false;
                 }
                 break;
@@ -279,6 +226,11 @@ class FormHandler {
         const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
         const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
         return cleanPhone.length >= 10 && phoneRegex.test(cleanPhone);
+    }
+
+    isValidZipCode(zipCode) {
+        const zipRegex = /^\d{5}(-\d{4})?$/;
+        return zipRegex.test(zipCode);
     }
 
     trackConversion() {

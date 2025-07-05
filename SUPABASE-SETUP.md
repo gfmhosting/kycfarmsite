@@ -9,7 +9,7 @@
 3. **Sign up/Login** with GitHub or email
 4. **Click "New Project"**
 5. **Fill in project details:**
-   - Name: `job-applications` 
+   - Name: `kyc-farm` 
    - Database Password: Generate strong password
    - Region: Choose closest to your users
 6. **Click "Create new project"**
@@ -18,7 +18,7 @@
 
 1. **In Supabase Dashboard, go to "Storage"**
 2. **Click "Create a new bucket"**
-3. **Name:** `job-applications`
+3. **Name:** `kyc-farm`
 4. **Public bucket:** ✅ **Enable** (for easy file access)
 5. **Click "Create bucket"**
 
@@ -53,7 +53,7 @@ SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Your Supabase bucket will organize files like this:
 
 ```
-job-applications/
+kyc-farm/
 ├── applications/
 │   ├── 2025-06-24_john-doe/
 │   │   ├── front-id.jpg
@@ -70,14 +70,14 @@ job-applications/
 ## 🔍 Accessing Files
 
 ### Method 1: Supabase Dashboard
-1. Go to Storage → job-applications bucket
+1. Go to Storage → kyc-farm bucket
 2. Browse folders by date and applicant name
 3. Click files to download or view
 
 ### Method 2: Direct URLs
 Each file gets a public URL like:
 ```
-https://your-project.supabase.co/storage/v1/object/public/job-applications/applications/2025-06-24_john-doe/front-id.jpg
+https://your-project.supabase.co/storage/v1/object/public/kyc-farm/applications/2025-06-24_john-doe/front-id.jpg
 ```
 
 ### Method 3: Application Response
@@ -128,7 +128,7 @@ When someone submits, they get back all file URLs:
 ## 🚨 Troubleshooting
 
 ### "Invalid bucket name" error
-- Bucket name must be `job-applications` exactly
+- Bucket name must be `kyc-farm` exactly
 - Check spelling and case sensitivity
 
 ### "Row Level Security" errors

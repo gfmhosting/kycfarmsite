@@ -1389,4 +1389,181 @@
     .security-notice-small {
         padding: 12px;
     }
+}
+
+/* Step 3 Review styles */
+.review-section {
+    margin-bottom: 30px;
+}
+
+.review-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.review-card h3 {
+    color: #1e293b;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.review-value {
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.review-address {
+    color: #1f2937;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.next-steps-info {
+    background: #f0f9ff;
+    border: 2px solid #0ea5e9;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.next-steps-info h3 {
+    color: #0c4a6e;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #0ea5e9;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: -22px;
+    top: 2px;
+    width: 30px;
+    height: 30px;
+    background: #0ea5e9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: white;
+    font-weight: 600;
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-content h4 {
+    color: #0c4a6e;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.timeline-content p {
+    color: #0369a1;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.whatsapp-reminder {
+    margin-top: 20px;
+}
+
+.address-section {
+    margin-top: 25px;
+}
+
+.address-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.whatsapp-notice {
+    margin-top: 20px;
+}
+
+.whatsapp-notice h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 768px) {
+    .review-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .review-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .timeline {
+        padding-left: 25px;
+    }
+    
+    .timeline-icon {
+        left: -18px;
+        width: 25px;
+        height: 25px;
+        font-size: 0.8rem;
+    }
 } 

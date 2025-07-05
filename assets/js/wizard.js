@@ -148,7 +148,7 @@ class ApplicationWizard {
             this.personalizeStep2();
         }
         if (this.currentStep === 3) {
-            this.setupTimeSlots();
+            this.populateReviewData();
         }
     }
     
@@ -165,27 +165,63 @@ class ApplicationWizard {
         }
     }
     
-    setupTimeSlots() {
-        const timeSlots = document.querySelectorAll('.time-slot');
-        timeSlots.forEach(slot => {
-            slot.addEventListener('click', () => {
-                timeSlots.forEach(s => s.classList.remove('selected'));
-                slot.classList.add('selected');
-                document.getElementById('selectedSlot').value = slot.textContent;
-                
-                // Update confirmation display
-                const selectedDate = document.getElementById('selectedDate');
-                if (selectedDate) {
-                    const today = slot.closest('.time-slots').previousElementSibling.textContent.includes('Today');
-                    const dateText = today ? `Today at ${slot.textContent}` : `Tomorrow at ${slot.textContent}`;
-                    selectedDate.textContent = dateText;
-                }
-            });
-        });
+    populateReviewData() {
+        // Populate personal information
+        const reviewName = document.getElementById('reviewName');
+        const reviewEmail = document.getElementById('reviewEmail');
+        const reviewPhone = document.getElementById('reviewPhone');
+        const reviewWhatsapp = document.getElementById('reviewWhatsapp');
+        const reviewAddress = document.getElementById('reviewAddress');
+        const reviewExperience = document.getElementById('reviewExperience');
+        const reviewSchedule = document.getElementById('reviewSchedule');
+        
+        if (reviewName) {
+            const firstName = document.getElementById('firstName')?.value || '';
+            const lastName = document.getElementById('lastName')?.value || '';
+            reviewName.textContent = `${firstName} ${lastName}`.trim() || '-';
+        }
+        
+        if (reviewEmail) {
+            reviewEmail.textContent = document.getElementById('email')?.value || '-';
+        }
+        
+        if (reviewPhone) {
+            reviewPhone.textContent = document.getElementById('phone')?.value || '-';
+        }
+        
+        if (reviewWhatsapp) {
+            reviewWhatsapp.textContent = document.getElementById('whatsapp')?.value || '-';
+        }
+        
+        if (reviewAddress) {
+            const street = document.getElementById('street')?.value || '';
+            const city = document.getElementById('city')?.value || '';
+            const state = document.getElementById('state')?.value || '';
+            const zipCode = document.getElementById('zipCode')?.value || '';
+            const country = document.getElementById('country')?.value || '';
+            
+            if (street && city && state && zipCode) {
+                reviewAddress.textContent = `${street}, ${city}, ${state} ${zipCode}, ${country}`;
+            } else {
+                reviewAddress.textContent = '-';
+            }
+        }
+        
+        if (reviewExperience) {
+            const experienceSelect = document.getElementById('experience');
+            const selectedOption = experienceSelect?.options[experienceSelect.selectedIndex];
+            reviewExperience.textContent = selectedOption?.text || '-';
+        }
+        
+        if (reviewSchedule) {
+            const scheduleSelect = document.getElementById('schedule');
+            const selectedOption = scheduleSelect?.options[scheduleSelect.selectedIndex];
+            reviewSchedule.textContent = selectedOption?.text || '-';
+        }
     }
 
     updateProgress() {
-        const progress = (this.currentStep / 4) * 100;
+        const progress = (this.currentStep / 3) * 100;
         document.querySelector('.progress-fill').style.width = progress + '%';
         
         document.querySelectorAll('.step').forEach((step, i) => {
@@ -200,41 +236,14 @@ class ApplicationWizard {
         
         if (!step) return false;
         
-        // Special validation for Step 3 (time slot selection)
+        // Special validation for Step 3 (review and submit)
         if (stepNumber === 3) {
-            const selectedSlot = document.getElementById('selectedSlot');
-            if (!selectedSlot || !selectedSlot.value) {
-                this.showValidationMessage('Please select an interview time slot to continue.');
-                return false;
-            }
+            // All validation is done in previous steps, just populate review
+            this.populateReviewData();
             return true;
         }
         
-        // Special validation for Step 4 (file uploads and video)
-        if (stepNumber === 4) {
-            let isValid = true;
-            
-            const idFrontFile = document.getElementById('idFront');
-            if (!idFrontFile?.files?.[0]) {
-                this.showFieldError(idFrontFile, 'Please upload a clear photo of your government ID');
-                isValid = false;
-            }
-            
-            if (!this.recordedBlob) {
-                const videoError = document.getElementById('cameraError');
-                if (videoError) {
-                    videoError.style.display = 'block';
-                    videoError.innerHTML = '<p style="color: #ef4444;">📹 Please record your 5-second verification video</p>';
-                }
-                isValid = false;
-            }
-            
-            if (!isValid) {
-                this.showValidationMessage('Please complete all verification requirements before submitting.');
-            }
-            
-            return isValid;
-        }
+
         
         const inputs = step.querySelectorAll('input[required], select[required]');
         console.log('Found required inputs:', inputs.length);
@@ -296,8 +305,14 @@ class ApplicationWizard {
                     case 'firstName':
                     case 'lastName':
                         return this.validateName(value);
-                    case 'location':
-                        return this.validateLocation(value);
+                    case 'whatsapp':
+                        return this.validatePhone(value);
+                    case 'street':
+                    case 'city':
+                    case 'state':
+                    case 'country':
+                    case 'zipCode':
+                        return { isValid: true };
                     default:
                         return { isValid: true };
                 }
@@ -349,6 +364,12 @@ class ApplicationWizard {
     validateLocation(location) {
         return { isValid: true };
     }
+    
+
+    
+
+
+
 
     getRequiredFieldMessage(input) {
         const messages = {
@@ -356,7 +377,12 @@ class ApplicationWizard {
             firstName: 'First name is required',
             lastName: 'Last name is required',
             phone: 'Phone number is required',
-            location: 'Location is required',
+            whatsapp: 'WhatsApp number is required',
+            street: 'Street address is required',
+            city: 'City is required',
+            state: 'State is required',
+            zipCode: 'ZIP code is required',
+            country: 'Country is required',
             experience: 'Please select your experience level',
             schedule: 'Please select your preferred schedule'
         };
@@ -464,160 +490,14 @@ class ApplicationWizard {
         });
     }
 
-    async startCamera() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            const preview = document.getElementById('preview');
-            const cameraError = document.getElementById('cameraError');
-            const startCameraBtn = document.getElementById('startCamera');
-            const recordBtn = document.getElementById('recordBtn');
-            
-            preview.srcObject = stream;
-            preview.style.display = 'block';
-            cameraError.style.display = 'none';
-            startCameraBtn.style.display = 'none';
-            recordBtn.style.display = 'inline-block';
-            
-            this.currentStream = stream;
-            
-        } catch (error) {
-            console.error('Camera access denied:', error);
-            const cameraError = document.getElementById('cameraError');
-            cameraError.style.display = 'block';
-            document.getElementById('preview').style.display = 'none';
-        }
-    }
 
-    startRecording() {
-        if (!this.currentStream) {
-            alert('Please start the camera first');
-            return;
-        }
-
-        try {
-            const recordBtn = document.getElementById('recordBtn');
-            const stopBtn = document.getElementById('stopBtn');
-            const recordingStatus = document.getElementById('recordingStatus');
-            
-            this.mediaRecorder = new MediaRecorder(this.currentStream);
-            const chunks = [];
-
-            this.mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-            this.mediaRecorder.onstop = () => {
-                this.recordedBlob = new Blob(chunks, { type: 'video/webm' });
-                const recorded = document.getElementById('recorded');
-                recorded.src = URL.createObjectURL(this.recordedBlob);
-                recorded.style.display = 'block';
-                
-                recordingStatus.textContent = '✅ ID verification video recorded successfully!';
-                recordingStatus.className = 'recording-status completed';
-                
-                this.showRetakeOption();
-            };
-
-            this.mediaRecorder.start();
-            
-            recordBtn.style.display = 'none';
-            stopBtn.style.display = 'inline-block';
-            recordingStatus.textContent = '🔴 Recording... Look at camera, then turn head left and right';
-            recordingStatus.className = 'recording-status recording';
-            
-            // Auto-stop after 5 seconds for ID verification
-            this.recordingTimeout = setTimeout(() => {
-                if (this.mediaRecorder.state === 'recording') {
-                    this.stopRecording();
-                }
-            }, 5000);
-
-        } catch (error) {
-            console.error('Recording failed:', error);
-            alert('Recording failed. Please try again.');
-        }
-    }
-
-    stopRecording() {
-        if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-            this.mediaRecorder.stop();
-            clearTimeout(this.recordingTimeout);
-            
-            const stopBtn = document.getElementById('stopBtn');
-            stopBtn.style.display = 'none';
-        }
-    }
-
-    retakeVideo() {
-        const recorded = document.getElementById('recorded');
-        const recordBtn = document.getElementById('recordBtn');
-        const retakeBtn = document.getElementById('retakeBtn');
-        const recordingStatus = document.getElementById('recordingStatus');
-        
-        recorded.style.display = 'none';
-        retakeBtn.style.display = 'none';
-        recordBtn.style.display = 'inline-block';
-        recordingStatus.textContent = '';
-        recordingStatus.className = 'recording-status';
-        
-        this.recordedBlob = null;
-    }
-
-    showRetakeOption() {
-        const retakeBtn = document.getElementById('retakeBtn');
-        retakeBtn.style.display = 'inline-block';
-        
-        // Stop camera preview
-        if (this.currentStream) {
-            this.currentStream.getTracks().forEach(track => track.stop());
-            this.currentStream = null;
-        }
-        
-        const preview = document.getElementById('preview');
-        preview.style.display = 'none';
-    }
-
-    handleFileUpload(input) {
-        const file = input.files[0];
-        if (file) {
-            const previewId = input.id === 'idFront' ? 'frontPreview' : 'backPreview';
-            const preview = document.getElementById(previewId);
-            
-            // Validate file type
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                alert('Please upload an image file (JPG, PNG, GIF, WebP)');
-                input.value = '';
-                return;
-            }
-            
-            // Validate file size (10MB limit)
-            if (file.size > 10 * 1024 * 1024) {
-                alert('File size must be less than 10MB');
-                input.value = '';
-                return;
-            }
-            
-            if (preview) {
-                preview.innerHTML = `
-                    <div class="upload-success">
-                        <div class="success-text">✅ ${file.name} uploaded successfully</div>
-                        <div class="file-size">Size: ${(file.size / 1024 / 1024).toFixed(2)} MB</div>
-                    </div>
-                `;
-            }
-            
-            // Clear any error for this field
-            this.clearFieldError(input);
-            input.style.borderColor = '#059669';
-            
-            console.log(`File uploaded for ${input.id}:`, file.name, file.size, 'bytes');
-        }
-    }
 
     async submitForm() {
         console.log('Starting form submission...');
         
         // Validate required fields first
-        if (!this.validateStep(4)) {
-            console.log('Step 4 validation failed');
+        if (!this.validateStep(3)) {
+            console.log('Step 3 validation failed');
             return;
         }
         
@@ -625,53 +505,60 @@ class ApplicationWizard {
         
         const formData = new FormData();
         
-        // Get fresh form data from the actual form
-        const form = document.getElementById('wizardForm');
-        if (form) {
-            const formDataObj = new FormData(form);
-            for (let [key, value] of formDataObj.entries()) {
-                // Skip file inputs and tracking fields - we'll handle them separately
-                if (key !== 'idFront' && key !== 'idBack' && key !== 'video' && !key.endsWith('_hasFile')) {
-                    formData.append(key, value);
-                }
-            }
-        }
+        // Collect form data directly by ID to ensure we get everything
+        const fieldMappings = {
+            'firstName': 'firstName',
+            'lastName': 'lastName', 
+            'email': 'email',
+            'phone': 'phone',
+            'whatsapp': 'whatsapp',
+            'street': 'street',
+            'city': 'city',
+            'state': 'state',
+            'zipCode': 'zipCode',
+            'country': 'country',
+            'experience': 'experience',
+            'schedule': 'schedule'
+        };
         
-        // Add essential data from saved state (in case form missed something)
-        const essentialFields = ['firstName', 'lastName', 'email', 'phone', 'location', 'experience', 'schedule'];
-        essentialFields.forEach(field => {
-            if (this.data[field] && !formData.has(field)) {
-                formData.append(field, this.data[field]);
+        console.log('Collecting form data by ID...');
+        console.log('Current step:', this.currentStep);
+        
+        Object.keys(fieldMappings).forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            console.log(`Looking for element with ID: ${fieldId}`);
+            
+            if (element) {
+                console.log(`Found element ${fieldId}, type: ${element.type}, value: "${element.value}"`);
+                const value = element.value ? element.value.trim() : '';
+                if (value) {
+                    formData.append(fieldMappings[fieldId], value);
+                    console.log(`✅ Added ${fieldId}: ${value}`);
+                } else {
+                    console.warn(`⚠️  Field ${fieldId} is empty - value: "${element.value}"`);
+                    // Add empty values too for debugging
+                    formData.append(fieldMappings[fieldId], '');
+                }
+            } else {
+                console.error(`❌ Element with ID ${fieldId} not found in DOM`);
             }
         });
-
-        // Add files (only if not already added from form data)
-        const idFrontFile = document.getElementById('idFront');
-        const idBackFile = document.getElementById('idBack');
         
-        if (idFrontFile && idFrontFile.files[0]) {
-            // Remove any existing idFront entries to avoid duplicates
-            formData.delete('idFront');
-            formData.append('idFront', idFrontFile.files[0]);
-            console.log('Added front ID file:', idFrontFile.files[0].name);
-        }
+        // Also try to get values from localStorage data
+        console.log('Current wizard data state:', this.data);
         
-        if (idBackFile && idBackFile.files[0]) {
-            // Remove any existing idBack entries to avoid duplicates
-            formData.delete('idBack');
-            formData.append('idBack', idBackFile.files[0]);
-            console.log('Added back ID file:', idBackFile.files[0].name);
-        }
-
-        if (this.recordedBlob) {
-            formData.append('video', this.recordedBlob, 'verification-video.webm');
-            console.log('Added video blob');
-        }
+        // Add data from wizard state as backup
+        Object.keys(fieldMappings).forEach(fieldId => {
+            if (this.data[fieldId] && !formData.has(fieldMappings[fieldId])) {
+                formData.append(fieldMappings[fieldId], this.data[fieldId]);
+                console.log(`✅ Added from wizard data ${fieldId}: ${this.data[fieldId]}`);
+            }
+        });
 
         // Log what we're sending
         console.log('FormData contents:');
         for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, typeof value === 'object' ? value.name || 'File' : value);
+            console.log(`${key}:`, value);
         }
 
         try {
@@ -718,7 +605,7 @@ class ApplicationWizard {
             const submitBtn = document.getElementById('finalSubmit');
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '🚀 Complete Application & Confirm Interview';
+                submitBtn.innerHTML = '🚀 Submit Application';
             }
         }
     }
@@ -777,7 +664,7 @@ class ApplicationWizard {
                     </div>
                     
                     <div class="follow-up-notice">
-                        <p>💼 <strong>Most applicants hear back within 24 hours.</strong> Keep an eye on your email and phone!</p>
+                        <p>📱 <strong>A representative will contact you via WhatsApp within 48-72 hours.</strong> Please keep your WhatsApp active and ready to respond!</p>
                     </div>
                     
                     <button onclick="location.reload()" class="submit-another-btn">
