@@ -14,19 +14,16 @@
 
 ## 📋 Setup Required (10 minutes)
 
-### 1. Create Google Sheet
-1. Go to [Google Sheets](https://sheets.google.com)
-2. Create a new sheet named "KYC Farm Leads"
-3. Add headers in Row 1:
-   ```
-   A1: Full Name
-   B1: Email
-   C1: Phone
-   D1: WhatsApp
-   E1: Address
-   F1: Timestamp
-   ```
-4. Copy the Sheet ID from URL (between `/d/` and `/edit`)
+### 1. Use Your Existing Google Sheet
+Your sheet already has the correct column structure:
+```
+A: FULL NAME | B: STRIPE | C: STRIPE PASS. | D: EMAIL | E: PHONE | F: WHATSAPP | 
+G: ADDRESS | H: DATE OF BIRTH | I: SSN | J: GMAIL | K: GMAIL PASS. | L: ROUTING # | 
+M: ACC # | N: APPLICATION ID | O: SUBMISSION DATE | P: STATUS | Q: PROXY | R: 2FA
+```
+
+Lead data will be populated in columns: A, D, E, F, G, N, O, P
+Other columns remain empty for manual entry.
 
 ### 2. Google Cloud Setup
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
@@ -64,12 +61,14 @@ Visit `http://localhost:8000/health` - should show:
 
 ### Lead Data Saved:
 ```
-Full Name: John Doe
-Email: john@example.com
-Phone: +1234567890
-WhatsApp: +1234567890
-Address: 123 Main St, City, ST 12345, USA
-Timestamp: 2024-01-15T10:30:00.000Z
+Column A (FULL NAME): John Doe
+Column D (EMAIL): john@example.com
+Column E (PHONE): +1234567890
+Column F (WHATSAPP): +1234567890
+Column G (ADDRESS): 123 Main St, City, ST 12345, USA
+Column N (APPLICATION ID): APP-1736936234567
+Column O (SUBMISSION DATE): 2024-01-15T10:30:00.000Z
+Column P (STATUS): New Lead
 ```
 
 ### Form Fields Captured:

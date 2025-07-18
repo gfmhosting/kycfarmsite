@@ -110,6 +110,3 @@ Thumbs.db
 # Uploads (keep directory structure but ignore files)
 backend/uploads/*
 !backend/uploads/.gitkeep
-
-# Google Service Account credentials
-credentials/google-service-account.json 
