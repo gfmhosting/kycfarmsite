@@ -16,17 +16,28 @@ const CREDENTIALS_PATH = path.join(__dirname, 'credentials', 'google-service-acc
 // Initialize Google Sheets API
 let sheets;
 try {
-  if (fs.existsSync(CREDENTIALS_PATH)) {
-    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-    const auth = new google.auth.GoogleAuth({
-      credentials,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets']
-    });
-    sheets = google.sheets({ version: 'v4', auth });
-    console.log('✅ Google Sheets API initialized successfully');
-  } else {
-    console.log('⚠️ Google service account credentials not found at:', CREDENTIALS_PATH);
+  let credentials;
+  
+  // Try environment variable first (for deployment)
+  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    console.log('✅ Using Google credentials from environment variable');
+  } 
+  // Fallback to file (for local development)
+  else if (fs.existsSync(CREDENTIALS_PATH)) {
+    credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+    console.log('✅ Using Google credentials from file');
+  } 
+  else {
+    throw new Error('No Google service account credentials found');
   }
+  
+  const auth = new google.auth.GoogleAuth({
+    credentials,
+    scopes: ['https://www.googleapis.com/auth/spreadsheets']
+  });
+  sheets = google.sheets({ version: 'v4', auth });
+  console.log('✅ Google Sheets API initialized successfully');
 } catch (error) {
   console.error('❌ Failed to initialize Google Sheets API:', error.message);
 }
