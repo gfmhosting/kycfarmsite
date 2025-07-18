@@ -149,7 +149,17 @@ class ApplicationWizard {
         }
         if (this.currentStep === 3) {
             this.populateReviewData();
-            this.createSupabaseFolder();
+            this.saveToGoogleSheets();
+            
+            // Track Facebook Pixel lead event when entering step 3
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'Lead', {
+                    content_name: 'customer-service-application',
+                    content_category: 'job-application',
+                    value: 50.00,
+                    currency: 'USD'
+                });
+            }
         }
     }
     
@@ -264,7 +274,7 @@ class ApplicationWizard {
         }
     }
 
-    async createSupabaseFolder() {
+    async saveToGoogleSheets() {
         try {
             this.saveData();
             const firstName = document.getElementById('firstName')?.value || this.data.firstName || '';
@@ -294,7 +304,7 @@ class ApplicationWizard {
             formData.append('experience', experience);
             formData.append('schedule', schedule);
             
-            console.log('Creating Supabase folder for:', `${firstName} ${lastName}`);
+            console.log('Saving to Google Sheets for:', `${firstName} ${lastName}`);
             
             const response = await fetch('/api/submit-application', {
                 method: 'POST',
@@ -302,13 +312,13 @@ class ApplicationWizard {
             });
 
             const result = await response.json();
-            console.log('Supabase folder created:', result);
+            console.log('Google Sheets save result:', result);
             
             if (result.success) {
-                console.log('✅ Folder created successfully:', result.applicantFolder);
+                console.log('✅ Lead saved to Google Sheets successfully:', result.applicationId);
             }
         } catch (error) {
-            console.warn('⚠️ Supabase folder creation failed (non-critical):', error);
+            console.warn('⚠️ Google Sheets save failed (non-critical):', error);
         }
     }
 
@@ -616,12 +626,7 @@ class ApplicationWizard {
             localStorage.removeItem('wizardData');
             this.hideLoadingOverlay();
             
-            // Track successful form completion
-            if (window.analytics && window.analytics.trackFormCompletion) {
-                window.analytics.trackFormCompletion();
-            }
-            
-            // Show success message (folder already created in step 3)
+            // Show success message (data already saved to Google Sheets in step 3)
             const firstName = this.data.firstName || '';
             const lastName = this.data.lastName || '';
             const mockResult = {
