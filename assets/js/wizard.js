@@ -239,7 +239,7 @@ class ApplicationWizard {
     initializeWhatsAppContact() {
         const whatsappBtn = document.getElementById('whatsappDirectContact');
         if (whatsappBtn) {
-            const recruiterNumber = '+306981563865';
+            const recruiterNumber = '+306946023086';
             const firstName = document.getElementById('firstName')?.value || this.data.firstName || '';
             const lastName = document.getElementById('lastName')?.value || this.data.lastName || '';
             const applicantName = `${firstName} ${lastName}`.trim();
