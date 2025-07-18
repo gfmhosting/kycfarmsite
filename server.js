@@ -11,26 +11,16 @@ const PORT = process.env.PORT || 8080;
 
 // Google Sheets configuration
 const GOOGLE_SHEET_ID = process.env.GOOGLE_SHEET_ID;
-const CREDENTIALS_PATH = path.join(__dirname, 'credentials', 'google-service-account.json');
 
 // Initialize Google Sheets API
 let sheets;
 try {
-  let credentials;
-  
-  // Try environment variable first (for deployment)
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-    credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
-    console.log('✅ Using Google credentials from environment variable');
-  } 
-  // Fallback to file (for local development)
-  else if (fs.existsSync(CREDENTIALS_PATH)) {
-    credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-    console.log('✅ Using Google credentials from file');
-  } 
-  else {
-    throw new Error('No Google service account credentials found');
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+    throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON environment variable is required');
   }
+  
+  const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  console.log('✅ Using Google credentials from environment variable');
   
   const auth = new google.auth.GoogleAuth({
     credentials,
