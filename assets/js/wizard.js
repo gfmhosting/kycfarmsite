@@ -230,49 +230,10 @@ class ApplicationWizard {
             reviewSchedule.textContent = selectedOption?.text || '-';
         }
 
-        // Wait a moment for DOM to be fully ready, then initialize WhatsApp
-        setTimeout(() => {
-            this.initializeWhatsAppContact();
-        }, 100);
+
     }
 
-    initializeWhatsAppContact() {
-        const whatsappBtn = document.getElementById('whatsappDirectContact');
-        if (whatsappBtn) {
-            const recruiterNumber = '+306946023086';
-            const firstName = document.getElementById('firstName')?.value || this.data.firstName || '';
-            const lastName = document.getElementById('lastName')?.value || this.data.lastName || '';
-            const applicantName = `${firstName} ${lastName}`.trim();
-            
-            const experienceSelect = document.getElementById('experience');
-            const scheduleSelect = document.getElementById('schedule');
-            const experience = experienceSelect?.options[experienceSelect.selectedIndex]?.text || 'some experience';
-            const schedule = scheduleSelect?.options[scheduleSelect.selectedIndex]?.text || 'flexible schedule';
-            
-            const message = `Hi! I'm ${applicantName} and I just submitted an application for the Remote Customer Service position. I have ${experience.toLowerCase()} and am looking for ${schedule.toLowerCase()} work. I'd love to discuss how I can contribute to your team and would appreciate priority processing of my application. Thank you!`;
-            
-            const whatsappUrl = `https://wa.me/${recruiterNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
-            
-            // Set href attribute
-            whatsappBtn.href = whatsappUrl;
-            whatsappBtn.target = '_blank';
-            
-            // Remove any existing click handlers
-            whatsappBtn.onclick = null;
-            
-            // Add click event handler
-            whatsappBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('WhatsApp button clicked, opening:', whatsappUrl);
-                window.open(whatsappUrl, '_blank');
-            });
-            
-            console.log('WhatsApp button initialized:', whatsappUrl);
-            console.log('Button element:', whatsappBtn);
-        } else {
-            console.warn('WhatsApp button not found');
-        }
-    }
+
 
     async saveToGoogleSheets() {
         try {
